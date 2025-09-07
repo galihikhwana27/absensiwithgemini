@@ -793,28 +793,6 @@
                 </form>
             `;
             showModal('Login Admin', content, '400px');
-            
-            document.getElementById('admin-login-form').addEventListener('submit', (e) => {
-                e.preventDefault();
-                const username = document.getElementById('login-username').value;
-                const password = document.getElementById('login-password').value;
-                const errorEl = document.getElementById('login-error');
-
-                if (!username || !password) {
-                    errorEl.textContent = "Username dan password harus diisi.";
-                    errorEl.classList.remove('hidden');
-                    return;
-                }
-                
-                if(username === adminCreds.username && password === adminCreds.password){
-                    isAdminLoggedIn = true;
-                    closeModal();
-                    switchPage('admin');
-                } else {
-                    errorEl.textContent = "Username atau password salah.";
-                    errorEl.classList.remove('hidden');
-                }
-            });
         };
 
         sidebarLinks.forEach(link => {
@@ -1042,7 +1020,6 @@
                     schoolSettings = data.schoolInfo || {};
                     adminCreds = data.adminCreds || { username: 'admin', password: 'password' };
                     updateSchoolUI(schoolSettings);
-                    document.getElementById('admin-username').value = adminCreds.username;
                 } else {
                     setDoc(configDoc, { schoolInfo: {}, adminCreds: { username: 'admin', password: 'password' } });
                 }
@@ -1117,38 +1094,6 @@
                 </form>
             `;
             showModal(title, content);
-
-            document.getElementById('guru-form').addEventListener('submit', async (e) => {
-                e.preventDefault();
-
-                const name = document.getElementById('guru-name').value.trim();
-                const nip = document.getElementById('guru-nip').value.trim();
-                const position = document.getElementById('guru-position').value.trim();
-                const subject = document.getElementById('guru-subject').value.trim();
-                const phone = document.getElementById('guru-phone').value.trim();
-
-                if (!name || !nip || !position || !subject || !phone) {
-                    showToast('Perhatian', 'Semua kolom wajib diisi.', 'info');
-                    return;
-                }
-
-                const id = document.getElementById('guru-id').value;
-                const teacherData = { name, nip, position, subject, phone };
-
-                try {
-                    if (id) {
-                        await setDoc(doc(db, `/artifacts/${appId}/public/data/teachers/${id}`), teacherData);
-                        showToast('Sukses', 'Data guru berhasil diperbarui!', 'success');
-                    } else {
-                        await addDoc(teachersCol, teacherData);
-                        showToast('Sukses', 'Guru baru berhasil ditambahkan!', 'success');
-                    }
-                    closeModal();
-                } catch (error) {
-                    console.error("Error saving teacher:", error);
-                    showToast('Gagal', 'Gagal menyimpan data guru.', 'error');
-                }
-            });
         };
 
         // Class CRUD
@@ -1177,36 +1122,6 @@
                 </form>
             `;
             showModal(title, content);
-            
-            document.getElementById('kelas-form').addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const name = document.getElementById('kelas-name').value.trim();
-                if (!name) {
-                    showToast('Perhatian', 'Nama Kelas wajib diisi.', 'info');
-                    return;
-                }
-
-                const id = document.getElementById('kelas-id').value;
-                const waliKelasSelect = document.getElementById('wali-kelas');
-                const waliKelasId = waliKelasSelect.value;
-                const waliKelasName = waliKelasId ? waliKelasSelect.options[waliKelasSelect.selectedIndex].text : '';
-                
-                const classData = { name, waliKelasId, waliKelasName };
-
-                try {
-                    if(id) {
-                        await setDoc(doc(db, `/artifacts/${appId}/public/data/classes/${id}`), classData);
-                        showToast('Sukses', 'Data kelas berhasil diperbarui!', 'success');
-                    } else {
-                        await addDoc(classesCol, classData);
-                        showToast('Sukses', 'Kelas baru berhasil ditambahkan!', 'success');
-                    }
-                    closeModal();
-                } catch (error) {
-                    console.error("Error saving class:", error);
-                    showToast('Gagal', 'Gagal menyimpan data kelas.', 'error');
-                }
-            });
         };
 
         // Student CRUD
@@ -1247,37 +1162,6 @@
                 </form>
             `;
             showModal(title, content);
-
-            document.getElementById('siswa-form').addEventListener('submit', async(e) => {
-                e.preventDefault();
-                const name = document.getElementById('siswa-name').value.trim();
-                const nisn = document.getElementById('siswa-nisn').value.trim();
-                const classId = document.getElementById('siswa-class').value;
-                const parentName = document.getElementById('siswa-parent-name').value.trim();
-                const phone = document.getElementById('siswa-phone').value.trim();
-
-                if (!name || !nisn || !classId || !parentName || !phone) {
-                    showToast('Perhatian', 'Semua kolom wajib diisi.', 'info');
-                    return;
-                }
-                
-                const id = document.getElementById('siswa-id').value;
-                const studentData = { name, nisn, classId, parentName, phone };
-                
-                try {
-                     if(id) {
-                        await setDoc(doc(db, `/artifacts/${appId}/public/data/students/${id}`), studentData);
-                        showToast('Sukses', 'Data siswa berhasil diperbarui!', 'success');
-                    } else {
-                        await addDoc(studentsCol, studentData);
-                        showToast('Sukses', 'Siswa baru berhasil ditambahkan!', 'success');
-                    }
-                    closeModal();
-                } catch (error) {
-                    console.error("Error saving student:", error);
-                    showToast('Gagal', 'Gagal menyimpan data siswa.', 'error');
-                }
-            });
         };
         
         // Attendance Functions
@@ -1365,7 +1249,127 @@
             document.getElementById('cancel-quick-fill-btn').onclick = closeModal;
         };
 
-        // --- Event Listeners ---
+        // --- GLOBAL EVENT LISTENERS (EVENT DELEGATION) ---
+        document.addEventListener('submit', async (e) => {
+            // --- MODAL: ADMIN LOGIN FORM ---
+            if (e.target.matches('#admin-login-form')) {
+                e.preventDefault();
+                const username = e.target.querySelector('#login-username').value;
+                const password = e.target.querySelector('#login-password').value;
+                const errorEl = e.target.querySelector('#login-error');
+
+                if (!username || !password) {
+                    errorEl.textContent = "Username dan password harus diisi.";
+                    errorEl.classList.remove('hidden');
+                    return;
+                }
+                
+                if(username === adminCreds.username && password === adminCreds.password){
+                    isAdminLoggedIn = true;
+                    closeModal();
+                    switchPage('admin');
+                } else {
+                    errorEl.textContent = "Username atau password salah.";
+                    errorEl.classList.remove('hidden');
+                }
+            }
+
+            // --- MODAL: GURU FORM ---
+            if (e.target.matches('#guru-form')) {
+                e.preventDefault();
+                const name = e.target.querySelector('#guru-name').value.trim();
+                const nip = e.target.querySelector('#guru-nip').value.trim();
+                const position = e.target.querySelector('#guru-position').value.trim();
+                const subject = e.target.querySelector('#guru-subject').value.trim();
+                const phone = e.target.querySelector('#guru-phone').value.trim();
+
+                if (!name || !nip || !position || !subject || !phone) {
+                    showToast('Perhatian', 'Semua kolom wajib diisi.', 'info');
+                    return;
+                }
+
+                const id = e.target.querySelector('#guru-id').value;
+                const teacherData = { name, nip, position, subject, phone };
+
+                try {
+                    if (id) {
+                        await setDoc(doc(db, `/artifacts/${appId}/public/data/teachers/${id}`), teacherData);
+                        showToast('Sukses', 'Data guru berhasil diperbarui!', 'success');
+                    } else {
+                        await addDoc(teachersCol, teacherData);
+                        showToast('Sukses', 'Guru baru berhasil ditambahkan!', 'success');
+                    }
+                    closeModal();
+                } catch (error) {
+                    console.error("Error saving teacher:", error);
+                    showToast('Gagal', 'Gagal menyimpan data guru.', 'error');
+                }
+            }
+
+            // --- MODAL: KELAS FORM ---
+            if (e.target.matches('#kelas-form')) {
+                e.preventDefault();
+                const name = e.target.querySelector('#kelas-name').value.trim();
+                if (!name) {
+                    showToast('Perhatian', 'Nama Kelas wajib diisi.', 'info');
+                    return;
+                }
+
+                const id = e.target.querySelector('#kelas-id').value;
+                const waliKelasSelect = e.target.querySelector('#wali-kelas');
+                const waliKelasId = waliKelasSelect.value;
+                const waliKelasName = waliKelasId ? waliKelasSelect.options[waliKelasSelect.selectedIndex].text : '';
+                
+                const classData = { name, waliKelasId, waliKelasName };
+
+                try {
+                    if(id) {
+                        await setDoc(doc(db, `/artifacts/${appId}/public/data/classes/${id}`), classData);
+                        showToast('Sukses', 'Data kelas berhasil diperbarui!', 'success');
+                    } else {
+                        await addDoc(classesCol, classData);
+                        showToast('Sukses', 'Kelas baru berhasil ditambahkan!', 'success');
+                    }
+                    closeModal();
+                } catch (error) {
+                    console.error("Error saving class:", error);
+                    showToast('Gagal', 'Gagal menyimpan data kelas.', 'error');
+                }
+            }
+            
+            // --- MODAL: SISWA FORM ---
+            if (e.target.matches('#siswa-form')) {
+                e.preventDefault();
+                const name = e.target.querySelector('#siswa-name').value.trim();
+                const nisn = e.target.querySelector('#siswa-nisn').value.trim();
+                const classId = e.target.querySelector('#siswa-class').value;
+                const parentName = e.target.querySelector('#siswa-parent-name').value.trim();
+                const phone = e.target.querySelector('#siswa-phone').value.trim();
+
+                if (!name || !nisn || !classId || !parentName || !phone) {
+                    showToast('Perhatian', 'Semua kolom wajib diisi.', 'info');
+                    return;
+                }
+                
+                const id = e.target.querySelector('#siswa-id').value;
+                const studentData = { name, nisn, classId, parentName, phone };
+                
+                try {
+                     if(id) {
+                        await setDoc(doc(db, `/artifacts/${appId}/public/data/students/${id}`), studentData);
+                        showToast('Sukses', 'Data siswa berhasil diperbarui!', 'success');
+                    } else {
+                        await addDoc(studentsCol, studentData);
+                        showToast('Sukses', 'Siswa baru berhasil ditambahkan!', 'success');
+                    }
+                    closeModal();
+                } catch (error) {
+                    console.error("Error saving student:", error);
+                    showToast('Gagal', 'Gagal menyimpan data siswa.', 'error');
+                }
+            }
+        });
+        
         document.addEventListener('click', (e) => {
             // Admin buttons
             if (e.target.closest('.edit-guru-btn')) {
