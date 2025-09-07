@@ -277,20 +277,20 @@
                     <form id="guru-attendance-form" class="space-y-4">
                         <div>
                             <label for="guru-select" class="block mb-1 font-semibold">Nama Guru</label>
-                            <select id="guru-select" class="w-full p-2 border rounded-lg">
+                            <select id="guru-select" class="w-full p-2 border rounded-lg" required>
                                 <option value="">Pilih Guru...</option>
                             </select>
                         </div>
                         <div>
                             <label for="absen-type" class="block mb-1 font-semibold">Jenis Absensi</label>
-                            <select id="absen-type" class="w-full p-2 border rounded-lg">
+                            <select id="absen-type" class="w-full p-2 border rounded-lg" required>
                                 <option value="datang">Waktu Datang</option>
                                 <option value="pulang">Waktu Pulang</option>
                             </select>
                         </div>
                         <div>
                             <label for="absen-status" class="block mb-1 font-semibold">Status Kehadiran</label>
-                            <select id="absen-status" class="w-full p-2 border rounded-lg">
+                            <select id="absen-status" class="w-full p-2 border rounded-lg" required>
                                 <option value="Hadir">Hadir</option>
                                 <option value="Izin">Izin</option>
                             </select>
@@ -302,11 +302,11 @@
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
                                 <label for="absen-date" class="block mb-1 font-semibold">Tanggal</label>
-                                <input type="date" id="absen-date" class="w-full p-2 border rounded-lg">
+                                <input type="date" id="absen-date" class="w-full p-2 border rounded-lg" required>
                             </div>
                             <div>
                                 <label for="absen-time" class="block mb-1 font-semibold">Waktu</label>
-                                <input type="time" id="absen-time" class="w-full p-2 border rounded-lg">
+                                <input type="time" id="absen-time" class="w-full p-2 border rounded-lg" required>
                             </div>
                         </div>
                         <div class="flex justify-end pt-4">
@@ -549,15 +549,15 @@
                              <form id="admin-creds-form" class="space-y-4 max-w-md">
                                  <div>
                                     <label for="admin-username" class="block mb-1 font-semibold">Username</label>
-                                    <input type="text" id="admin-username" class="w-full p-2 border rounded-lg">
+                                    <input type="text" id="admin-username" class="w-full p-2 border rounded-lg" required>
                                 </div>
                                 <div>
                                     <label for="admin-password" class="block mb-1 font-semibold">Password Baru</label>
-                                    <input type="password" id="admin-password" class="w-full p-2 border rounded-lg">
+                                    <input type="password" id="admin-password" class="w-full p-2 border rounded-lg" required>
                                 </div>
                                 <div>
                                     <label for="admin-password-confirm" class="block mb-1 font-semibold">Konfirmasi Password Baru</label>
-                                    <input type="password" id="admin-password-confirm" class="w-full p-2 border rounded-lg">
+                                    <input type="password" id="admin-password-confirm" class="w-full p-2 border rounded-lg" required>
                                 </div>
                                 <div class="text-right">
                                     <button type="submit" class="btn-primary">Simpan Akun</button>
@@ -591,10 +591,18 @@
         import { getFirestore, doc, getDoc, setDoc, addDoc, updateDoc, deleteDoc, onSnapshot, collection, query, where, getDocs, serverTimestamp, Timestamp, orderBy } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         
         // --- Firebase Configuration ---
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : { apiKey: "YOUR_API_KEY", authDomain: "YOUR_AUTH_DOMAIN", projectId: "YOUR_PROJECT_ID" };
+        const firebaseConfig = {
+  apiKey: "AIzaSyCMbA9nG-Ux1g4DgYs6l7tO7KyYwswo17U",
+  authDomain: "absensi-smpn3lpj.firebaseapp.com",
+  projectId: "absensi-smpn3lpj",
+  storageBucket: "absensi-smpn3lpj.firebasestorage.app",
+  messagingSenderId: "120025002903",
+  appId: "1:120025002903:web:a44878547d8f37d4d84ad2",
+  measurementId: "G-35SEP40HDD"
+};
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'smpn3-lempuing-jaya';
         
-        let app, auth, db, userId;
+        let firebaseApp, auth, db, userId;
         let teachersCol, classesCol, studentsCol, guruAttendanceLogCol, siswaAttendanceCol, configDoc;
 
 
@@ -638,7 +646,7 @@
                 if (!response.ok) {
                     const errorBody = await response.text();
                     console.error("API Error Response:", errorBody);
-                    throw new Error(`API call failed with status: ${response.status}. Body: ${errorBody}`);
+                    throw new Error(`API call failed with status: ${response.status}`);
                 }
 
                 const result = await response.json();
@@ -651,7 +659,8 @@
                 }
             } catch (error) {
                 console.error("Gemini API call error:", error);
-                return `Terjadi kesalahan saat menghubungi AI. Detail: ${error.message}`;
+                showToast('Gemini Gagal', `Terjadi kesalahan saat menghubungi AI: ${error.message}`, 'error');
+                return "Terjadi kesalahan saat menghubungi AI. Periksa konsol untuk detail.";
             } finally {
                 if (buttonElement) {
                     buttonElement.disabled = false;
@@ -780,11 +789,11 @@
                     <p class="text-sm text-gray-600">Silakan masukkan kredensial untuk mengakses halaman admin.</p>
                     <div>
                         <label for="login-username" class="block mb-1 font-semibold">Username</label>
-                        <input type="text" id="login-username" class="w-full p-2 border rounded-lg">
+                        <input type="text" id="login-username" class="w-full p-2 border rounded-lg" required>
                     </div>
                      <div>
                         <label for="login-password" class="block mb-1 font-semibold">Password</label>
-                        <input type="password" id="login-password" class="w-full p-2 border rounded-lg">
+                        <input type="password" id="login-password" class="w-full p-2 border rounded-lg" required>
                     </div>
                     <p id="login-error" class="text-red-500 text-sm hidden"></p>
                     <div class="flex justify-end">
@@ -1059,10 +1068,9 @@
             });
         };
 
-        // --- Firebase CRUD Functions ---
+        // --- Firebase CRUD Handlers ---
         
-        // Teacher CRUD
-        const handleTeacherForm = async (teacherId = null) => {
+        const handleTeacherForm = (teacherId = null) => {
             const teacher = teacherId ? teachers.find(t => t.id === teacherId) : null;
             const title = teacherId ? 'Edit Data Guru' : 'Tambah Guru Baru';
             const content = `
@@ -1096,8 +1104,7 @@
             showModal(title, content);
         };
 
-        // Class CRUD
-        const handleClassForm = async (classId = null) => {
+        const handleClassForm = (classId = null) => {
             const aClass = classId ? classes.find(c => c.id === classId) : null;
             const title = classId ? 'Edit Data Kelas' : 'Tambah Kelas Baru';
             const teacherOptions = teachers.map(t => `<option value="${t.id}" ${aClass && aClass.waliKelasId === t.id ? 'selected' : ''}>${t.name}</option>`).join('');
@@ -1124,8 +1131,7 @@
             showModal(title, content);
         };
 
-        // Student CRUD
-        const handleStudentForm = async (studentId = null) => {
+        const handleStudentForm = (studentId = null) => {
             const student = studentId ? students.find(s => s.id === studentId) : null;
             const title = studentId ? 'Edit Data Siswa' : 'Tambah Siswa Baru';
             const classOptions = classes.map(c => `<option value="${c.id}" ${student && student.classId === c.id ? 'selected' : ''}>${c.name}</option>`).join('');
@@ -1164,18 +1170,14 @@
             showModal(title, content);
         };
         
-        // Attendance Functions
         const initializeGuruAttendanceForm = () => {
             const form = document.getElementById('guru-attendance-form');
             if (!form) return;
-
-            // Set default date and time
+            form.reset();
             document.getElementById('absen-date').value = getTodayDateString();
             document.getElementById('absen-time').value = getCurrentTimeString();
-
-            // Populate teacher dropdown
             const guruSelect = document.getElementById('guru-select');
-            guruSelect.innerHTML = '<option value="">Pilih Guru...</option>'; // Reset
+            guruSelect.innerHTML = '<option value="">Pilih Guru...</option>';
             teachers.forEach(teacher => {
                 const option = document.createElement('option');
                 option.value = teacher.id;
@@ -1188,39 +1190,27 @@
             const studentClass = classes.find(c => c.id === classId);
             try {
                 await addDoc(siswaAttendanceCol, {
-                    studentId,
-                    studentName,
-                    classId,
+                    studentId, studentName, classId,
                     className: studentClass ? studentClass.name : '',
-                    status,
-                    date: getTodayDateString(),
-                    timestamp: serverTimestamp(),
-                    recordedBy: userId
+                    status, date: getTodayDateString(), timestamp: serverTimestamp(), recordedBy: userId
                 });
-                if (showNotification) {
-                    showToast('Absensi Disimpan', `Kehadiran untuk ${studentName} (${status}) berhasil dicatat.`, 'success');
-                }
+                if (showNotification) showToast('Absensi Disimpan', `Kehadiran untuk ${studentName} (${status}) berhasil dicatat.`, 'success');
             } catch (error) {
                 console.error("Error recording student attendance:", error);
-                if (showNotification) {
-                    showToast('Gagal', 'Gagal mencatat absensi siswa.', 'error');
-                }
-                throw error; // Re-throw error for batch handling
+                if (showNotification) showToast('Gagal', 'Gagal mencatat absensi siswa.', 'error');
+                throw error;
             }
         };
 
         const handleQuickFill = (classId, status) => {
             const studentsToMark = students
-                .filter(s => s.classId === classId)
-                .filter(s => !todaySiswaAttendance.some(att => att.studentId === s.id));
+                .filter(s => s.classId === classId && !todaySiswaAttendance.some(att => att.studentId === s.id));
 
             if (studentsToMark.length === 0) {
                 showToast('Info', 'Semua siswa di kelas ini sudah diabsen.', 'info');
                 return;
             }
-
             const className = classes.find(c => c.id === classId)?.name || 'kelas ini';
-            
             showModal('Konfirmasi Isi Cepat', `
                 <p>Anda akan mengisi status <strong>${status}</strong> untuk <strong>${studentsToMark.length} siswa</strong> yang belum diabsen di ${className}. Lanjutkan?</p>
                 <div class="flex justify-end gap-4 mt-4">
@@ -1232,40 +1222,32 @@
             document.getElementById('confirm-quick-fill-btn').onclick = async () => {
                 closeModal();
                 showToast('Memproses', `Mengisi absensi untuk ${studentsToMark.length} siswa...`, 'info');
-
-                const promises = studentsToMark.map(student => 
-                    submitSiswaAttendance(student.id, student.name, status, classId, false)
-                );
-
+                const promises = studentsToMark.map(student => submitSiswaAttendance(student.id, student.name, status, classId, false));
                 try {
                     await Promise.all(promises);
-                    showToast('Sukses', `Absensi untuk ${studentsToMark.length} siswa berhasil diisi dengan status ${status}.`, 'success');
+                    showToast('Sukses', `Absensi untuk ${studentsToMark.length} siswa berhasil diisi.`, 'success');
                 } catch (error) {
-                    console.error("Quick fill error:", error);
                     showToast('Gagal', 'Terjadi kesalahan saat mengisi absensi massal.', 'error');
                 }
             };
-
             document.getElementById('cancel-quick-fill-btn').onclick = closeModal;
         };
 
         // --- GLOBAL EVENT LISTENERS (EVENT DELEGATION) ---
         document.addEventListener('submit', async (e) => {
-            e.preventDefault(); // Prevent default form submission for ALL forms.
+            e.preventDefault(); 
+            const form = e.target;
 
-            // --- ADMIN LOGIN FORM ---
-            if (e.target.matches('#admin-login-form')) {
-                const username = e.target.querySelector('#login-username').value.trim();
-                const password = e.target.querySelector('#login-password').value;
-                const errorEl = e.target.querySelector('#login-error');
-
+            if (form.matches('#admin-login-form')) {
+                const username = form.querySelector('#login-username').value.trim();
+                const password = form.querySelector('#login-password').value;
+                const errorEl = form.querySelector('#login-error');
                 if (!username || !password) {
                     errorEl.textContent = "Username dan password harus diisi.";
                     errorEl.classList.remove('hidden');
                     return;
                 }
-                
-                if(username === adminCreds.username && password === adminCreds.password){
+                if (username === adminCreds.username && password === adminCreds.password) {
                     isAdminLoggedIn = true;
                     closeModal();
                     switchPage('admin');
@@ -1274,23 +1256,18 @@
                     errorEl.classList.remove('hidden');
                 }
             }
-
-            // --- GURU FORM ---
-            else if (e.target.matches('#guru-form')) {
-                const name = e.target.querySelector('#guru-name').value.trim();
-                const nip = e.target.querySelector('#guru-nip').value.trim();
-                const position = e.target.querySelector('#guru-position').value.trim();
-                const subject = e.target.querySelector('#guru-subject').value.trim();
-                const phone = e.target.querySelector('#guru-phone').value.trim();
-
+            else if (form.matches('#guru-form')) {
+                const name = form.querySelector('#guru-name').value.trim();
+                const nip = form.querySelector('#guru-nip').value.trim();
+                const position = form.querySelector('#guru-position').value.trim();
+                const subject = form.querySelector('#guru-subject').value.trim();
+                const phone = form.querySelector('#guru-phone').value.trim();
                 if (!name || !nip || !position || !subject || !phone) {
                     showToast('Perhatian', 'Semua kolom wajib diisi.', 'info');
                     return;
                 }
-
-                const id = e.target.querySelector('#guru-id').value;
+                const id = form.querySelector('#guru-id').value;
                 const teacherData = { name, nip, position, subject, phone };
-
                 try {
                     if (id) {
                         await setDoc(doc(db, `/artifacts/${appId}/public/data/teachers/${id}`), teacherData);
@@ -1301,26 +1278,20 @@
                     }
                     closeModal();
                 } catch (error) {
-                    console.error("Error saving teacher:", error);
-                    showToast('Gagal', 'Gagal menyimpan data guru.', 'error');
+                    showToast('Gagal', `Gagal menyimpan data guru. Error: ${error.message}`, 'error');
                 }
             }
-
-            // --- KELAS FORM ---
-            else if (e.target.matches('#kelas-form')) {
-                const name = e.target.querySelector('#kelas-name').value.trim();
+            else if (form.matches('#kelas-form')) {
+                const name = form.querySelector('#kelas-name').value.trim();
                 if (!name) {
                     showToast('Perhatian', 'Nama Kelas wajib diisi.', 'info');
                     return;
                 }
-
-                const id = e.target.querySelector('#kelas-id').value;
-                const waliKelasSelect = e.target.querySelector('#wali-kelas');
+                const id = form.querySelector('#kelas-id').value;
+                const waliKelasSelect = form.querySelector('#wali-kelas');
                 const waliKelasId = waliKelasSelect.value;
                 const waliKelasName = waliKelasId ? waliKelasSelect.options[waliKelasSelect.selectedIndex].text : '';
-                
                 const classData = { name, waliKelasId, waliKelasName };
-
                 try {
                     if(id) {
                         await setDoc(doc(db, `/artifacts/${appId}/public/data/classes/${id}`), classData);
@@ -1331,27 +1302,21 @@
                     }
                     closeModal();
                 } catch (error) {
-                    console.error("Error saving class:", error);
-                    showToast('Gagal', 'Gagal menyimpan data kelas.', 'error');
+                    showToast('Gagal', `Gagal menyimpan data kelas. Error: ${error.message}`, 'error');
                 }
             }
-            
-            // --- SISWA FORM ---
-            else if (e.target.matches('#siswa-form')) {
-                const name = e.target.querySelector('#siswa-name').value.trim();
-                const nisn = e.target.querySelector('#siswa-nisn').value.trim();
-                const classId = e.target.querySelector('#siswa-class').value;
-                const parentName = e.target.querySelector('#siswa-parent-name').value.trim();
-                const phone = e.target.querySelector('#siswa-phone').value.trim();
-
+            else if (form.matches('#siswa-form')) {
+                const name = form.querySelector('#siswa-name').value.trim();
+                const nisn = form.querySelector('#siswa-nisn').value.trim();
+                const classId = form.querySelector('#siswa-class').value;
+                const parentName = form.querySelector('#siswa-parent-name').value.trim();
+                const phone = form.querySelector('#siswa-phone').value.trim();
                 if (!name || !nisn || !classId || !parentName || !phone) {
                     showToast('Perhatian', 'Semua kolom wajib diisi.', 'info');
                     return;
                 }
-                
-                const id = e.target.querySelector('#siswa-id').value;
+                const id = form.querySelector('#siswa-id').value;
                 const studentData = { name, nisn, classId, parentName, phone };
-                
                 try {
                      if(id) {
                         await setDoc(doc(db, `/artifacts/${appId}/public/data/students/${id}`), studentData);
@@ -1362,17 +1327,13 @@
                     }
                     closeModal();
                 } catch (error) {
-                    console.error("Error saving student:", error);
-                    showToast('Gagal', 'Gagal menyimpan data siswa.', 'error');
+                    showToast('Gagal', `Gagal menyimpan data siswa. Error: ${error.message}`, 'error');
                 }
             }
-
-            // --- ADMIN CREDS FORM ---
-            else if (e.target.matches('#admin-creds-form')) {
-                const username = e.target.querySelector('#admin-username').value.trim();
-                const pass = e.target.querySelector('#admin-password').value;
-                const confirmPass = e.target.querySelector('#admin-password-confirm').value;
-
+            else if (form.matches('#admin-creds-form')) {
+                const username = form.querySelector('#admin-username').value.trim();
+                const pass = form.querySelector('#admin-password').value;
+                const confirmPass = form.querySelector('#admin-password-confirm').value;
                 if (!username || !pass) {
                     showToast('Kesalahan Input', 'Username dan Password baru tidak boleh kosong.', 'error');
                     return;
@@ -1385,37 +1346,30 @@
                     showToast('Kesalahan Input', 'Password minimal harus 6 karakter.', 'error');
                     return;
                 }
-
                 try {
                     await updateDoc(configDoc, { adminCreds: { username, password: pass } });
                     showToast('Sukses', 'Kredensial admin berhasil diperbarui!', 'success');
-                    e.target.querySelector('#admin-password').value = '';
-                    e.target.querySelector('#admin-password-confirm').value = '';
+                    form.querySelector('#admin-password').value = '';
+                    form.querySelector('#admin-password-confirm').value = '';
                 } catch (error) {
-                    console.error('Error saving admin credentials: ', error);
-                    showToast('Gagal', 'Gagal menyimpan kredensial admin.', 'error');
+                    showToast('Gagal', `Gagal menyimpan kredensial. Error: ${error.message}`, 'error');
                 }
             }
-
-             // --- GURU ATTENDANCE FORM ---
-            else if (e.target.matches('#guru-attendance-form')) {
-                const teacherId = e.target.querySelector('#guru-select').value;
+            else if (form.matches('#guru-attendance-form')) {
+                const teacherId = form.querySelector('#guru-select').value;
                 if (!teacherId) {
-                    showToast('Perhatian', 'Silakan pilih nama guru terlebih dahulu.', 'info');
+                    showToast('Perhatian', 'Silakan pilih nama guru.', 'info');
                     return;
                 }
-                const teacherName = e.target.querySelector('#guru-select').options[e.target.querySelector('#guru-select').selectedIndex].text;
-                const type = e.target.querySelector('#absen-type').value;
-                const date = e.target.querySelector('#absen-date').value;
-                
-                // VALIDATION
+                const teacherName = form.querySelector('#guru-select').options[form.querySelector('#guru-select').selectedIndex].text;
+                const type = form.querySelector('#absen-type').value;
+                const date = form.querySelector('#absen-date').value;
                 const qDatang = query(guruAttendanceLogCol, where("date", "==", date), where("teacherId", "==", teacherId), where("type", "==", "datang"));
                 const datangSnapshot = await getDocs(qDatang);
                 const qPulang = query(guruAttendanceLogCol, where("date", "==", date), where("teacherId", "==", teacherId), where("type", "==", "pulang"));
                 const pulangSnapshot = await getDocs(qPulang);
-                
                 if (type === 'datang' && !datangSnapshot.empty) {
-                    showToast('Duplikat', `Guru "${teacherName}" sudah absen datang pada tanggal ini.`, 'error');
+                    showToast('Duplikat', `Guru "${teacherName}" sudah absen datang hari ini.`, 'error');
                     return;
                 }
                 if (type === 'pulang') {
@@ -1424,37 +1378,27 @@
                         return;
                     }
                     if (!pulangSnapshot.empty) {
-                        showToast('Duplikat', `Guru "${teacherName}" sudah absen pulang pada tanggal ini.`, 'error');
+                        showToast('Duplikat', `Guru "${teacherName}" sudah absen pulang hari ini.`, 'error');
                         return;
                     }
                 }
-
                 const attendanceData = {
-                    teacherId,
-                    teacherName,
-                    type,
-                    status: e.target.querySelector('#absen-status').value,
-                    keterangan: e.target.querySelector('#absen-keterangan').value,
-                    date,
-                    time: e.target.querySelector('#absen-time').value,
-                    timestamp: serverTimestamp(),
-                    recordedBy: userId
+                    teacherId, teacherName, type,
+                    status: form.querySelector('#absen-status').value,
+                    keterangan: form.querySelector('#absen-keterangan').value,
+                    date, time: form.querySelector('#absen-time').value,
+                    timestamp: serverTimestamp(), recordedBy: userId
                 };
-
                 try {
                     await addDoc(guruAttendanceLogCol, attendanceData);
                     showToast('Absensi Disimpan', `Absensi ${type} untuk ${teacherName} berhasil disimpan.`, 'success');
-                    e.target.reset();
                     initializeGuruAttendanceForm();
                 } catch (error) {
-                    console.error("Error saving teacher attendance:", error);
-                    showToast('Gagal', 'Gagal menyimpan absensi guru.', 'error');
+                    showToast('Gagal', `Gagal menyimpan absensi. Error: ${error.message}`, 'error');
                 }
             }
-
-            // --- SCHOOL INFO FORM ---
-            else if (e.target.matches('#school-info-form')) {
-                const logoUploadInput = e.target.querySelector('#school-logo-upload');
+            else if (form.matches('#school-info-form')) {
+                const logoUploadInput = form.querySelector('#school-logo-upload');
                 const logoFile = logoUploadInput.files[0];
                 let logoDataUrl = schoolSettings.logoDataUrl || null;
 
@@ -1466,39 +1410,32 @@
                     try {
                         logoDataUrl = await fileToBase64(logoFile);
                     } catch (error) {
-                        console.error("Error reading logo file:", error);
                         showToast('Gagal Unggah', 'Gagal memproses file logo.', 'error');
                         return;
                     }
                 }
                 
                 const newInfo = {
-                    name: e.target.querySelector('#school-name').value,
-                    npsn: e.target.querySelector('#school-npsn').value,
-                    address: e.target.querySelector('#school-address').value,
+                    name: form.querySelector('#school-name').value,
+                    npsn: form.querySelector('#school-npsn').value,
+                    address: form.querySelector('#school-address').value,
                     logoDataUrl,
-                    principal: e.target.querySelector('#school-principal').value,
-                    principalNip: e.target.querySelector('#school-principal-nip').value,
+                    principal: form.querySelector('#school-principal').value,
+                    principalNip: form.querySelector('#school-principal-nip').value,
                 };
                 try {
                     await updateDoc(configDoc, { schoolInfo: newInfo });
                     showToast('Sukses', 'Identitas sekolah berhasil diperbarui!', 'success');
                 } catch (error) {
-                    console.error('Error saving school info: ', error);
-                    showToast('Gagal', 'Gagal menyimpan identitas sekolah.', 'error');
+                    showToast('Gagal', `Gagal menyimpan identitas. Error: ${error.message}`, 'error');
                 }
             }
         });
 
         document.addEventListener('click', (e) => {
-            // Admin buttons
-            if (e.target.closest('.edit-guru-btn')) {
-                handleTeacherForm(e.target.closest('.edit-guru-btn').dataset.id);
-            }
-            if (e.target.closest('#add-guru-btn')) {
-                handleTeacherForm();
-            }
-            if (e.target.closest('.delete-guru-btn')) {
+            if (e.target.closest('.edit-guru-btn')) handleTeacherForm(e.target.closest('.edit-guru-btn').dataset.id);
+            else if (e.target.closest('#add-guru-btn')) handleTeacherForm();
+            else if (e.target.closest('.delete-guru-btn')) {
                 const id = e.target.closest('.delete-guru-btn').dataset.id;
                 showModal('Konfirmasi Hapus', `
                     <p>Apakah Anda yakin ingin menghapus data guru ini?</p>
@@ -1512,13 +1449,9 @@
                 };
                 document.getElementById('cancel-delete-btn').onclick = closeModal;
             }
-            if (e.target.closest('#add-kelas-btn')) {
-                handleClassForm();
-            }
-            if (e.target.closest('.edit-kelas-btn')) {
-                handleClassForm(e.target.closest('.edit-kelas-btn').dataset.id);
-            }
-            if (e.target.closest('.delete-kelas-btn')) {
+            else if (e.target.closest('#add-kelas-btn')) handleClassForm();
+            else if (e.target.closest('.edit-kelas-btn')) handleClassForm(e.target.closest('.edit-kelas-btn').dataset.id);
+            else if (e.target.closest('.delete-kelas-btn')) {
                 const id = e.target.closest('.delete-kelas-btn').dataset.id;
                 showModal('Konfirmasi Hapus', `
                     <p>Apakah Anda yakin ingin menghapus data kelas ini? Ini akan membuat siswa di kelas ini tidak terhubung.</p>
@@ -1532,13 +1465,9 @@
                 };
                  document.getElementById('cancel-delete-btn').onclick = closeModal;
             }
-            if (e.target.closest('#add-siswa-btn')) {
-                handleStudentForm();
-            }
-            if (e.target.closest('.edit-siswa-btn')) {
-                handleStudentForm(e.target.closest('.edit-siswa-btn').dataset.id);
-            }
-            if (e.target.closest('.delete-siswa-btn')) {
+            else if (e.target.closest('#add-siswa-btn')) handleStudentForm();
+            else if (e.target.closest('.edit-siswa-btn')) handleStudentForm(e.target.closest('.edit-siswa-btn').dataset.id);
+            else if (e.target.closest('.delete-siswa-btn')) {
                 const id = e.target.closest('.delete-siswa-btn').dataset.id;
                 showModal('Konfirmasi Hapus', `
                     <p>Apakah Anda yakin ingin menghapus data siswa ini?</p>
@@ -1552,9 +1481,7 @@
                 };
                  document.getElementById('cancel-delete-btn').onclick = closeModal;
             }
-            
-            // Attendance buttons
-            if (e.target.matches('.siswa-absen-btn')) {
+            else if (e.target.matches('.siswa-absen-btn')) {
                 const { id, name, status, classId } = e.target.dataset;
                 submitSiswaAttendance(id, name, status, classId);
             }
@@ -1574,7 +1501,7 @@
             if (file) {
                 if (file.size > 500 * 1024) {
                     showToast('Gagal Unggah', 'Ukuran file logo terlalu besar. Maksimal 500KB.', 'error');
-                    e.target.value = ''; // Clear the input
+                    e.target.value = '';
                     return;
                 }
                 const reader = new FileReader();
@@ -1593,7 +1520,7 @@
             renderStudentListAdmin(e.target.value);
         });
         
-        // Rekap Filter
+        // Rekap Filter Listeners
         document.getElementById('filter-rekap-guru-btn').addEventListener('click', async () => {
             const date = document.getElementById('rekap-date-guru').value || getTodayDateString();
             const resultsContainer = document.getElementById('rekap-guru-results');
@@ -1660,15 +1587,13 @@
             const resultsContainer = document.getElementById('rekap-siswa-results');
             const summarySection = document.getElementById('rekap-summary-section');
             resultsContainer.innerHTML = `<p class="text-center">Memuat data...</p>`;
-            summarySection.classList.add('hidden'); // Hide summary on new filter
+            summarySection.classList.add('hidden');
             
             const classFilter = document.getElementById('rekap-kelas-filter').value;
-            let q;
-            if (classFilter === 'all') {
-                q = query(siswaAttendanceCol, where("date", "==", date));
-            } else {
-                q = query(siswaAttendanceCol, where("date", "==", date), where("classId", "==", classFilter));
-            }
+            let q = classFilter === 'all'
+                ? query(siswaAttendanceCol, where("date", "==", date))
+                : query(siswaAttendanceCol, where("date", "==", date), where("classId", "==", classFilter));
+            
             const snapshot = await getDocs(q);
             const attendanceData = snapshot.docs.map(doc => doc.data());
 
@@ -1742,11 +1667,16 @@
 
         // --- App Initialization ---
         const initApp = async () => {
-            app = initializeApp(firebaseConfig);
-            auth = getAuth(app);
-            db = getFirestore(app);
+            try {
+                firebaseApp = initializeApp(firebaseConfig);
+                auth = getAuth(firebaseApp);
+                db = getFirestore(firebaseApp);
+            } catch (error) {
+                console.error("Firebase initialization failed:", error);
+                document.getElementById('app-content').innerHTML = `<div class="w-full h-full flex items-center justify-center p-4 bg-red-100 text-red-800"><div><h1 class="text-2xl font-bold">Error: Inisialisasi Gagal</h1><p>Gagal terhubung ke Firebase. Pastikan konfigurasi Firebase Anda benar dan telah ditempelkan di dalam file HTML.</p><pre class="mt-4 bg-red-200 p-2 rounded">${error.message}</pre></div></div>`;
+                return;
+            }
 
-            // Define collections after db is initialized
             teachersCol = collection(db, `/artifacts/${appId}/public/data/teachers`);
             classesCol = collection(db, `/artifacts/${appId}/public/data/classes`);
             studentsCol = collection(db, `/artifacts/${appId}/public/data/students`);
@@ -1754,12 +1684,11 @@
             siswaAttendanceCol = collection(db, `/artifacts/${appId}/public/data/siswa_attendance`);
             configDoc = doc(db, `/artifacts/${appId}/public/data/config/settings`);
 
-
             onAuthStateChanged(auth, user => {
                 if (user) {
                     userId = user.uid;
                     document.getElementById('userIdDisplay').textContent = userId.substring(0, 8) + '...';
-                    setupListeners(); // Setup listeners after user is authenticated
+                    setupListeners();
                 } else {
                      document.getElementById('userIdDisplay').textContent = 'Not logged in';
                 }
@@ -1773,12 +1702,17 @@
                 }
             } catch (error) {
                 console.error("Authentication failed:", error);
-                // Handle auth failure (e.g., show an error message)
+                 document.getElementById('app-content').innerHTML = `<div class="w-full h-full flex items-center justify-center p-4 bg-red-100 text-red-800"><div><h1 class="text-2xl font-bold">Error: Autentikasi Gagal</h1><p>Gagal terhubung ke layanan autentikasi. Pastikan "Anonymous sign-in" diaktifkan di Firebase Console (Authentication -> Sign-in method).</p><pre class="mt-4 bg-red-200 p-2 rounded">${error.message}</pre></div></div>`;
             }
         };
 
         // --- Entry Point ---
         window.onload = () => {
+            if (firebaseConfig.apiKey.startsWith("GANTI_DENGAN")) {
+                document.body.innerHTML = `<div class="w-full h-screen flex items-center justify-center p-4 bg-yellow-100 text-yellow-800 text-center"><div><h1 class="text-2xl font-bold">Konfigurasi Dibutuhkan</h1><p class="mt-2">Anda belum memasukkan konfigurasi Firebase. Buka file index.html, cari variabel 'firebaseConfig', dan isi dengan detail dari proyek Firebase Anda sesuai tutorial.</p></div></div>`;
+                return;
+            }
+
             lucide.createIcons();
             updateDateTime();
             document.getElementById('rekap-date-guru').value = getTodayDateString();
@@ -1802,4 +1736,5 @@
     </script>
 </body>
 </html>
+
 
