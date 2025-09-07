@@ -638,7 +638,7 @@
                 if (!response.ok) {
                     const errorBody = await response.text();
                     console.error("API Error Response:", errorBody);
-                    throw new Error(`API call failed with status: ${response.status}`);
+                    throw new Error(`API call failed with status: ${response.status}. Body: ${errorBody}`);
                 }
 
                 const result = await response.json();
@@ -651,7 +651,7 @@
                 }
             } catch (error) {
                 console.error("Gemini API call error:", error);
-                return "Terjadi kesalahan saat menghubungi AI. Periksa konsol untuk detail.";
+                return `Terjadi kesalahan saat menghubungi AI. Detail: ${error.message}`;
             } finally {
                 if (buttonElement) {
                     buttonElement.disabled = false;
@@ -1251,10 +1251,11 @@
 
         // --- GLOBAL EVENT LISTENERS (EVENT DELEGATION) ---
         document.addEventListener('submit', async (e) => {
-            // --- MODAL: ADMIN LOGIN FORM ---
+            e.preventDefault(); // Prevent default form submission for ALL forms.
+
+            // --- ADMIN LOGIN FORM ---
             if (e.target.matches('#admin-login-form')) {
-                e.preventDefault();
-                const username = e.target.querySelector('#login-username').value;
+                const username = e.target.querySelector('#login-username').value.trim();
                 const password = e.target.querySelector('#login-password').value;
                 const errorEl = e.target.querySelector('#login-error');
 
@@ -1274,9 +1275,8 @@
                 }
             }
 
-            // --- MODAL: GURU FORM ---
-            if (e.target.matches('#guru-form')) {
-                e.preventDefault();
+            // --- GURU FORM ---
+            else if (e.target.matches('#guru-form')) {
                 const name = e.target.querySelector('#guru-name').value.trim();
                 const nip = e.target.querySelector('#guru-nip').value.trim();
                 const position = e.target.querySelector('#guru-position').value.trim();
@@ -1306,9 +1306,8 @@
                 }
             }
 
-            // --- MODAL: KELAS FORM ---
-            if (e.target.matches('#kelas-form')) {
-                e.preventDefault();
+            // --- KELAS FORM ---
+            else if (e.target.matches('#kelas-form')) {
                 const name = e.target.querySelector('#kelas-name').value.trim();
                 if (!name) {
                     showToast('Perhatian', 'Nama Kelas wajib diisi.', 'info');
@@ -1337,9 +1336,8 @@
                 }
             }
             
-            // --- MODAL: SISWA FORM ---
-            if (e.target.matches('#siswa-form')) {
-                e.preventDefault();
+            // --- SISWA FORM ---
+            else if (e.target.matches('#siswa-form')) {
                 const name = e.target.querySelector('#siswa-name').value.trim();
                 const nisn = e.target.querySelector('#siswa-nisn').value.trim();
                 const classId = e.target.querySelector('#siswa-class').value;
@@ -1368,8 +1366,130 @@
                     showToast('Gagal', 'Gagal menyimpan data siswa.', 'error');
                 }
             }
+
+            // --- ADMIN CREDS FORM ---
+            else if (e.target.matches('#admin-creds-form')) {
+                const username = e.target.querySelector('#admin-username').value.trim();
+                const pass = e.target.querySelector('#admin-password').value;
+                const confirmPass = e.target.querySelector('#admin-password-confirm').value;
+
+                if (!username || !pass) {
+                    showToast('Kesalahan Input', 'Username dan Password baru tidak boleh kosong.', 'error');
+                    return;
+                }
+                if (pass !== confirmPass) {
+                    showToast('Kesalahan Input', 'Password dan konfirmasi password tidak cocok.', 'error');
+                    return;
+                }
+                if(pass.length < 6){
+                    showToast('Kesalahan Input', 'Password minimal harus 6 karakter.', 'error');
+                    return;
+                }
+
+                try {
+                    await updateDoc(configDoc, { adminCreds: { username, password: pass } });
+                    showToast('Sukses', 'Kredensial admin berhasil diperbarui!', 'success');
+                    e.target.querySelector('#admin-password').value = '';
+                    e.target.querySelector('#admin-password-confirm').value = '';
+                } catch (error) {
+                    console.error('Error saving admin credentials: ', error);
+                    showToast('Gagal', 'Gagal menyimpan kredensial admin.', 'error');
+                }
+            }
+
+             // --- GURU ATTENDANCE FORM ---
+            else if (e.target.matches('#guru-attendance-form')) {
+                const teacherId = e.target.querySelector('#guru-select').value;
+                if (!teacherId) {
+                    showToast('Perhatian', 'Silakan pilih nama guru terlebih dahulu.', 'info');
+                    return;
+                }
+                const teacherName = e.target.querySelector('#guru-select').options[e.target.querySelector('#guru-select').selectedIndex].text;
+                const type = e.target.querySelector('#absen-type').value;
+                const date = e.target.querySelector('#absen-date').value;
+                
+                // VALIDATION
+                const qDatang = query(guruAttendanceLogCol, where("date", "==", date), where("teacherId", "==", teacherId), where("type", "==", "datang"));
+                const datangSnapshot = await getDocs(qDatang);
+                const qPulang = query(guruAttendanceLogCol, where("date", "==", date), where("teacherId", "==", teacherId), where("type", "==", "pulang"));
+                const pulangSnapshot = await getDocs(qPulang);
+                
+                if (type === 'datang' && !datangSnapshot.empty) {
+                    showToast('Duplikat', `Guru "${teacherName}" sudah absen datang pada tanggal ini.`, 'error');
+                    return;
+                }
+                if (type === 'pulang') {
+                    if (datangSnapshot.empty) {
+                        showToast('Kesalahan Alur', `Guru "${teacherName}" harus absen datang terlebih dahulu.`, 'error');
+                        return;
+                    }
+                    if (!pulangSnapshot.empty) {
+                        showToast('Duplikat', `Guru "${teacherName}" sudah absen pulang pada tanggal ini.`, 'error');
+                        return;
+                    }
+                }
+
+                const attendanceData = {
+                    teacherId,
+                    teacherName,
+                    type,
+                    status: e.target.querySelector('#absen-status').value,
+                    keterangan: e.target.querySelector('#absen-keterangan').value,
+                    date,
+                    time: e.target.querySelector('#absen-time').value,
+                    timestamp: serverTimestamp(),
+                    recordedBy: userId
+                };
+
+                try {
+                    await addDoc(guruAttendanceLogCol, attendanceData);
+                    showToast('Absensi Disimpan', `Absensi ${type} untuk ${teacherName} berhasil disimpan.`, 'success');
+                    e.target.reset();
+                    initializeGuruAttendanceForm();
+                } catch (error) {
+                    console.error("Error saving teacher attendance:", error);
+                    showToast('Gagal', 'Gagal menyimpan absensi guru.', 'error');
+                }
+            }
+
+            // --- SCHOOL INFO FORM ---
+            else if (e.target.matches('#school-info-form')) {
+                const logoUploadInput = e.target.querySelector('#school-logo-upload');
+                const logoFile = logoUploadInput.files[0];
+                let logoDataUrl = schoolSettings.logoDataUrl || null;
+
+                if (logoFile) {
+                    if (logoFile.size > 500 * 1024) {
+                        showToast('Gagal Unggah', 'Ukuran file logo terlalu besar. Maksimal 500KB.', 'error');
+                        return;
+                    }
+                    try {
+                        logoDataUrl = await fileToBase64(logoFile);
+                    } catch (error) {
+                        console.error("Error reading logo file:", error);
+                        showToast('Gagal Unggah', 'Gagal memproses file logo.', 'error');
+                        return;
+                    }
+                }
+                
+                const newInfo = {
+                    name: e.target.querySelector('#school-name').value,
+                    npsn: e.target.querySelector('#school-npsn').value,
+                    address: e.target.querySelector('#school-address').value,
+                    logoDataUrl,
+                    principal: e.target.querySelector('#school-principal').value,
+                    principalNip: e.target.querySelector('#school-principal-nip').value,
+                };
+                try {
+                    await updateDoc(configDoc, { schoolInfo: newInfo });
+                    showToast('Sukses', 'Identitas sekolah berhasil diperbarui!', 'success');
+                } catch (error) {
+                    console.error('Error saving school info: ', error);
+                    showToast('Gagal', 'Gagal menyimpan identitas sekolah.', 'error');
+                }
+            }
         });
-        
+
         document.addEventListener('click', (e) => {
             // Admin buttons
             if (e.target.closest('.edit-guru-btn')) {
@@ -1446,140 +1566,6 @@
                 keteranganContainer.classList.remove('hidden');
             } else {
                 keteranganContainer.classList.add('hidden');
-            }
-        });
-        
-        document.getElementById('guru-attendance-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const teacherId = document.getElementById('guru-select').value;
-            if (!teacherId) {
-                showToast('Perhatian', 'Silakan pilih nama guru terlebih dahulu.', 'info');
-                return;
-            }
-            const teacherName = document.getElementById('guru-select').options[document.getElementById('guru-select').selectedIndex].text;
-            const type = document.getElementById('absen-type').value;
-            const date = document.getElementById('absen-date').value;
-            
-            // --- VALIDASI ABSENSI GANDA & ALUR ---
-            
-            // 1. Cek duplikat absen 'datang'
-            if (type === 'datang') {
-                const q = query(guruAttendanceLogCol, where("date", "==", date), where("teacherId", "==", teacherId), where("type", "==", "datang"));
-                const snapshot = await getDocs(q);
-                if (!snapshot.empty) {
-                    showToast('Duplikat', `Guru "${teacherName}" sudah absen datang pada tanggal ini.`, 'error');
-                    return;
-                }
-            }
-
-            // 2. Cek apakah sudah 'datang' sebelum 'pulang' & cek duplikat 'pulang'
-            if (type === 'pulang') {
-                // Cek apakah 'datang' sudah ada
-                const qDatang = query(guruAttendanceLogCol, where("date", "==", date), where("teacherId", "==", teacherId), where("type", "==", "datang"));
-                const datangSnapshot = await getDocs(qDatang);
-                if (datangSnapshot.empty) {
-                    showToast('Kesalahan Alur', `Guru "${teacherName}" harus absen datang terlebih dahulu sebelum absen pulang.`, 'error');
-                    return;
-                }
-                
-                // Cek apakah 'pulang' sudah ada
-                const qPulang = query(guruAttendanceLogCol, where("date", "==", date), where("teacherId", "==", teacherId), where("type", "==", "pulang"));
-                const pulangSnapshot = await getDocs(qPulang);
-                if (!pulangSnapshot.empty) {
-                    showToast('Duplikat', `Guru "${teacherName}" sudah absen pulang pada tanggal ini.`, 'error');
-                    return;
-                }
-            }
-
-            const attendanceData = {
-                teacherId,
-                teacherName,
-                type: type,
-                status: document.getElementById('absen-status').value,
-                keterangan: document.getElementById('absen-keterangan').value,
-                date: date,
-                time: document.getElementById('absen-time').value,
-                timestamp: serverTimestamp(),
-                recordedBy: userId
-            };
-
-            try {
-                await addDoc(guruAttendanceLogCol, attendanceData);
-                showToast('Absensi Disimpan', `Absensi ${type === 'datang' ? 'datang' : 'pulang'} untuk ${teacherName} berhasil disimpan.`, 'success');
-                e.target.reset(); // Reset form
-                initializeGuruAttendanceForm(); // Re-initialize with current date/time
-            } catch (error) {
-                console.error("Error saving teacher attendance:", error);
-                showToast('Gagal', 'Gagal menyimpan absensi guru.', 'error');
-            }
-        });
-
-
-        document.getElementById('school-info-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const logoUploadInput = document.getElementById('school-logo-upload');
-            const logoFile = logoUploadInput.files[0];
-
-            let logoDataUrl = schoolSettings.logoDataUrl || null; // Keep old logo if no new one is uploaded
-
-            if (logoFile) {
-                if (logoFile.size > 500 * 1024) { // 500 KB limit
-                    showToast('Gagal Unggah', 'Ukuran file logo terlalu besar. Maksimal 500KB.', 'error');
-                    return;
-                }
-                try {
-                    logoDataUrl = await fileToBase64(logoFile);
-                } catch (error) {
-                    console.error("Error reading logo file:", error);
-                    showToast('Gagal Unggah', 'Gagal memproses file logo.', 'error');
-                    return;
-                }
-            }
-            
-            const newInfo = {
-                name: document.getElementById('school-name').value,
-                npsn: document.getElementById('school-npsn').value,
-                address: document.getElementById('school-address').value,
-                logoDataUrl: logoDataUrl,
-                principal: document.getElementById('school-principal').value,
-                principalNip: document.getElementById('school-principal-nip').value,
-            };
-            try {
-                await updateDoc(configDoc, { schoolInfo: newInfo });
-                showToast('Sukses', 'Identitas sekolah berhasil diperbarui!', 'success');
-            } catch (error) {
-                console.error('Error saving school info: ', error);
-                showToast('Gagal', 'Gagal menyimpan identitas sekolah.', 'error');
-            }
-        });
-
-        document.getElementById('admin-creds-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const username = document.getElementById('admin-username').value.trim();
-            const pass = document.getElementById('admin-password').value;
-            const confirmPass = document.getElementById('admin-password-confirm').value;
-
-            if (!username || !pass) {
-                showToast('Kesalahan Input', 'Username dan Password baru tidak boleh kosong.', 'error');
-                return;
-            }
-            if (pass !== confirmPass) {
-                showToast('Kesalahan Input', 'Password dan konfirmasi password tidak cocok.', 'error');
-                return;
-            }
-            if(pass.length < 6){
-                showToast('Kesalahan Input', 'Password minimal harus 6 karakter.', 'error');
-                return;
-            }
-
-            try {
-                await updateDoc(configDoc, { adminCreds: { username, password: pass } });
-                showToast('Sukses', 'Kredensial admin berhasil diperbarui!', 'success');
-                document.getElementById('admin-password').value = '';
-                document.getElementById('admin-password-confirm').value = '';
-            } catch (error) {
-                console.error('Error saving admin credentials: ', error);
-                showToast('Gagal', 'Gagal menyimpan kredensial admin.', 'error');
             }
         });
         
