@@ -1,0 +1,1796 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Absensi Online - SMPN 3 Lempuing Jaya</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        :root {
+            --primary: #1E40AF; /* Blue-800 */
+            --secondary: #10B981; /* Emerald-500 */
+            --background: #F3F4F6; /* Gray-100 */
+            --text-dark: #1F2937; /* Gray-800 */
+            --text-light: #6B7280; /* Gray-500 */
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--background);
+            color: var(--text-dark);
+        }
+        .sidebar {
+            transition: transform 0.3s ease-in-out;
+        }
+        .sidebar-link {
+            transition: all 0.2s ease-in-out;
+        }
+        .sidebar-link:hover, .sidebar-link.active {
+            background-color: var(--primary);
+            color: white;
+            transform: translateX(4px);
+        }
+        .card {
+            background-color: white;
+            border-radius: 0.75rem;
+            border: 1px solid #e5e7eb; /* Added subtle border for contrast */
+            box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.05); /* Softened shadow */
+            transition: all 0.3s ease-in-out;
+        }
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 4px 10px -3px rgb(0 0 0 / 0.1), 0 2px 6px -4px rgb(0 0 0 / 0.1);
+        }
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+            font-weight: 600;
+            border-radius: 0.5rem;
+            padding: 0.6rem 1.2rem;
+            transition: background-color 0.3s;
+        }
+        .btn-primary:hover {
+            background-color: #1D4ED8; /* Blue-700 */
+        }
+        .btn-primary:disabled {
+            background-color: #93C5FD;
+            cursor: not-allowed;
+        }
+        .btn-secondary {
+            background-color: var(--secondary);
+            color: white;
+            font-weight: 600;
+            border-radius: 0.5rem;
+            padding: 0.6rem 1.2rem;
+            transition: background-color 0.3s;
+        }
+        .btn-secondary:hover {
+            background-color: #059669; /* Emerald-600 */
+        }
+        .btn-purple {
+            background-color: #9333EA; /* Purple-600 */
+            color: white;
+            font-weight: 600;
+            border-radius: 0.5rem;
+            padding: 0.6rem 1.2rem;
+            transition: background-color 0.3s;
+        }
+        .btn-purple:hover {
+            background-color: #7E22CE; /* Purple-700 */
+        }
+        .btn-dark {
+            background-color: #374151; /* Gray-700 */
+            color: white;
+            font-weight: 600;
+            border-radius: 0.5rem;
+            padding: 0.6rem 1.2rem;
+            transition: background-color 0.3s;
+        }
+        .btn-dark:hover {
+            background-color: #1F2937; /* Gray-800 */
+        }
+        .page {
+            display: none;
+        }
+        .page.active {
+            display: block;
+            animation: fadeIn 0.5s;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .modal-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 40;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 0.75rem;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+            max-height: 90vh; /* Batasi tinggi maksimal modal */
+            overflow-y: auto; /* Tambahkan scroll jika konten meluap */
+        }
+        .rekap-tab-btn.active, .admin-tab-btn.active {
+            color: var(--primary);
+            border-color: var(--primary);
+        }
+        #toast {
+            position: fixed;
+            top: 1.25rem;
+            left: 50%;
+            transform: translate(-50%, -150%);
+            opacity: 0;
+            transition: all 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+            z-index: 50;
+            min-width: 350px;
+            max-width: 90%;
+        }
+    </style>
+    <link rel="stylesheet" href="https://rsms.me/inter/inter.css">
+</head>
+<body class="flex h-screen">
+
+    <!-- Sidebar -->
+    <aside id="sidebar" class="bg-white w-64 h-full p-4 flex-shrink-0 transform -translate-x-full fixed md:relative md:translate-x-0 sidebar z-20 shadow-lg">
+        <div class="flex items-center gap-3 mb-6">
+            <img src="https://placehold.co/40x40/1E40AF/FFFFFF?text=3" id="sidebar-logo" alt="Logo Sekolah" class="rounded-full">
+            <h1 class="text-xl font-bold text-gray-800" id="sidebar-school-name">SMPN 3 Lempuing Jaya</h1>
+        </div>
+        <nav class="space-y-2">
+            <a href="#" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 font-semibold active" data-page="home">
+                <i data-lucide="home"></i> Home
+            </a>
+            <a href="#" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 font-semibold" data-page="absen-guru">
+                <i data-lucide="user-check"></i> Absen Guru
+            </a>
+            <a href="#" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 font-semibold" data-page="absen-siswa">
+                <i data-lucide="users"></i> Absen Siswa
+            </a>
+            <a href="#" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 font-semibold" data-page="rekap-absen">
+                <i data-lucide="file-text"></i> Rekap Absen
+            </a>
+            <a href="#" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 font-semibold" data-page="admin">
+                <i data-lucide="settings"></i> Admin
+            </a>
+        </nav>
+        <div class="absolute bottom-4 left-4 text-xs text-gray-400">
+            UserID: <span id="userIdDisplay">Loading...</span>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col overflow-hidden">
+        <!-- Top Bar -->
+        <header class="bg-blue-800 text-white shadow-md p-4 flex justify-between items-center">
+             <div class="flex items-center gap-4">
+                <button id="menu-toggle" class="md:hidden text-white">
+                    <i data-lucide="menu"></i>
+                </button>
+                <img id="header-logo" src="https://placehold.co/40x40/FFFFFF/1E40AF?text=3" alt="Logo Sekolah" class="h-10 w-10 rounded-full hidden sm:block">
+                <div>
+                     <h2 id="header-school-name" class="text-xl font-bold">Sistem Absensi Online</h2>
+                     <p id="page-title" class="text-sm text-blue-200">Sistem Absensi Guru dan Siswa</p>
+                </div>
+            </div>
+            <div class="text-right">
+                <p id="current-date" class="font-semibold"></p>
+                <p id="current-time" class="text-sm text-blue-300"></p>
+            </div>
+        </header>
+
+        <!-- Page Content -->
+        <div class="flex-1 overflow-x-hidden overflow-y-auto p-4 md:p-6">
+            
+             <!-- Quick Access Panel (Visible on all pages) -->
+            <div class="mb-6 card p-5">
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <button class="btn-primary w-full h-full flex flex-col items-center justify-center text-center p-3" onclick="navigateTo('absen-guru')">
+                        <div class="flex items-center gap-2">
+                            <i data-lucide="user-check" class="w-5 h-5"></i>
+                            <span class="font-semibold">Absen Guru</span>
+                        </div>
+                        <span class="text-xs font-normal text-blue-200 mt-1">Catat kehadiran guru harian.</span>
+                    </button>
+                    <button class="btn-secondary w-full h-full flex flex-col items-center justify-center text-center p-3" onclick="navigateTo('absen-siswa')">
+                        <div class="flex items-center gap-2">
+                            <i data-lucide="users" class="w-5 h-5"></i>
+                            <span class="font-semibold">Absen Siswa</span>
+                        </div>
+                        <span class="text-xs font-normal text-emerald-200 mt-1">Catat kehadiran siswa per kelas.</span>
+                    </button>
+                    <button class="btn-purple w-full h-full flex flex-col items-center justify-center text-center p-3" onclick="navigateTo('rekap-absen')">
+                        <div class="flex items-center gap-2">
+                            <i data-lucide="file-text" class="w-5 h-5"></i>
+                            <span class="font-semibold">Rekap Absen</span>
+                        </div>
+                        <span class="text-xs font-normal text-purple-200 mt-1">Lihat laporan rekapitulasi data.</span>
+                    </button>
+                    <button class="btn-dark w-full h-full flex flex-col items-center justify-center text-center p-3" onclick="navigateTo('admin')">
+                        <div class="flex items-center gap-2">
+                            <i data-lucide="settings" class="w-5 h-5"></i>
+                            <span class="font-semibold">Admin</span>
+                        </div>
+                        <span class="text-xs font-normal text-gray-300 mt-1">Kelola data & pengaturan.</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Home Page -->
+            <section id="home-page" class="page active">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div class="card p-5 flex items-center gap-5">
+                        <div class="bg-blue-100 p-4 rounded-full">
+                            <i data-lucide="user-check" class="text-blue-600"></i>
+                        </div>
+                        <div>
+                            <p class="text-gray-500">Guru Hadir Hari Ini</p>
+                            <p id="guru-hadir-count" class="text-3xl font-bold">0</p>
+                        </div>
+                    </div>
+                    <div class="card p-5 flex items-center gap-5">
+                        <div class="bg-emerald-100 p-4 rounded-full">
+                            <i data-lucide="users" class="text-emerald-600"></i>
+                        </div>
+                        <div>
+                            <p class="text-gray-500">Siswa Hadir Hari Ini</p>
+                            <p id="siswa-hadir-count" class="text-3xl font-bold">0%</p>
+                        </div>
+                    </div>
+                     <div class="card p-5 flex items-center gap-5">
+                        <div class="bg-yellow-100 p-4 rounded-full">
+                            <i data-lucide="user-cog" class="text-yellow-600"></i>
+                        </div>
+                        <div>
+                            <p class="text-gray-500">Total Guru Terdaftar</p>
+                            <p id="total-guru-count" class="text-3xl font-bold">0</p>
+                        </div>
+                    </div>
+                </div>
+                 <!-- Gemini Feature: Motivational Quote -->
+                <div class="mt-6 card p-5">
+                    <h4 class="text-xl font-bold mb-4">Motivasi Hari Ini</h4>
+                    <div id="motivasi-container" class="text-gray-600 italic mb-4 min-h-[4rem] flex items-center justify-center p-4 bg-gray-50 rounded-lg">
+                        Klik tombol di bawah untuk mendapatkan kutipan motivasi.
+                    </div>
+                    <button id="get-motivasi-btn" class="btn-primary w-full flex items-center justify-center gap-2">
+                        ✨ Dapatkan Motivasi
+                    </button>
+                </div>
+            </section>
+
+            <!-- Absen Guru Page -->
+            <section id="absen-guru-page" class="page">
+                 <div class="card p-5 max-w-2xl mx-auto">
+                    <h3 class="text-2xl font-bold mb-6">Form Absensi Guru</h3>
+                    <form id="guru-attendance-form" class="space-y-4">
+                        <div>
+                            <label for="guru-select" class="block mb-1 font-semibold">Nama Guru</label>
+                            <select id="guru-select" class="w-full p-2 border rounded-lg" required>
+                                <option value="">Pilih Guru...</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="absen-type" class="block mb-1 font-semibold">Jenis Absensi</label>
+                            <select id="absen-type" class="w-full p-2 border rounded-lg" required>
+                                <option value="datang">Waktu Datang</option>
+                                <option value="pulang">Waktu Pulang</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="absen-status" class="block mb-1 font-semibold">Status Kehadiran</label>
+                            <select id="absen-status" class="w-full p-2 border rounded-lg" required>
+                                <option value="Hadir">Hadir</option>
+                                <option value="Izin">Izin</option>
+                            </select>
+                        </div>
+                        <div id="keterangan-container" class="hidden">
+                            <label for="absen-keterangan" class="block mb-1 font-semibold">Keterangan (untuk Izin)</label>
+                            <textarea id="absen-keterangan" class="w-full p-2 border rounded-lg" rows="3"></textarea>
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label for="absen-date" class="block mb-1 font-semibold">Tanggal</label>
+                                <input type="date" id="absen-date" class="w-full p-2 border rounded-lg" required>
+                            </div>
+                            <div>
+                                <label for="absen-time" class="block mb-1 font-semibold">Waktu</label>
+                                <input type="time" id="absen-time" class="w-full p-2 border rounded-lg" required>
+                            </div>
+                        </div>
+                        <div class="flex justify-end pt-4">
+                            <button type="submit" class="btn-primary">Simpan Absensi</button>
+                        </div>
+                    </form>
+                </div>
+            </section>
+
+            <!-- Absen Siswa Page -->
+            <section id="absen-siswa-page" class="page">
+                <div class="card p-5">
+                    <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4">
+                        <h3 class="text-2xl font-bold mb-4 sm:mb-0">Absensi Siswa</h3>
+                        <div class="flex items-center gap-4">
+                            <label for="class-selector-siswa" class="font-semibold whitespace-nowrap">Pilih Kelas:</label>
+                            <select id="class-selector-siswa" class="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
+                                <option>Pilih kelas...</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <!-- Quick Fill Buttons -->
+                    <div id="quick-fill-container" class="mb-4 p-3 bg-gray-50 rounded-lg hidden">
+                        <p class="font-semibold mb-2 text-sm text-gray-700">Isi Cepat Absensi:</p>
+                        <div class="flex flex-wrap gap-2">
+                            <button class="quick-fill-btn text-sm px-3 py-1 bg-green-500 text-white rounded-md hover:bg-green-600" data-status="Hadir">Hadir Semua</button>
+                            <button class="quick-fill-btn text-sm px-3 py-1 bg-yellow-500 text-white rounded-md hover:bg-yellow-600" data-status="Izin">Izin Semua</button>
+                            <button class="quick-fill-btn text-sm px-3 py-1 bg-orange-500 text-white rounded-md hover:bg-orange-600" data-status="Sakit">Sakit Semua</button>
+                            <button class="quick-fill-btn text-sm px-3 py-1 bg-red-500 text-white rounded-md hover:bg-red-600" data-status="Alpha">Alpha Semua</button>
+                        </div>
+                         <p class="text-xs text-gray-500 mt-2">*) Hanya akan mengisi absensi untuk siswa yang berstatus "Belum Absen".</p>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="p-3 font-semibold">Nama Siswa</th>
+                                    <th class="p-3 font-semibold">Status Kehadiran</th>
+                                    <th class="p-3 font-semibold text-center">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="student-attendance-list">
+                                <!-- Data siswa akan dimuat di sini -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Rekap Absen Page -->
+            <section id="rekap-absen-page" class="page">
+                 <div class="card p-5">
+                    <h3 class="text-2xl font-bold mb-4">Rekapitulasi Absensi</h3>
+                    
+                    <!-- Tabs -->
+                    <div class="flex border-b mb-6">
+                        <button class="rekap-tab-btn py-3 px-6 font-semibold text-gray-600 border-b-2 border-transparent active" data-tab="rekap-guru">Rekap Guru</button>
+                        <button class="rekap-tab-btn py-3 px-6 font-semibold text-gray-600 border-b-2 border-transparent" data-tab="rekap-siswa">Rekap Siswa</button>
+                    </div>
+
+                    <!-- Tab Content -->
+                    <div id="rekap-content">
+                        <!-- Rekap Guru Content -->
+                        <div id="rekap-guru-tab" class="rekap-tab-content active">
+                            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                                <div>
+                                    <label for="rekap-date-guru" class="block font-semibold mb-1">Tanggal</label>
+                                    <input type="date" id="rekap-date-guru" class="w-full p-2 border rounded-lg">
+                                </div>
+                                <div class="self-end">
+                                    <button id="filter-rekap-guru-btn" class="btn-primary w-full">Tampilkan</button>
+                                </div>
+                            </div>
+                            <div id="rekap-guru-results" class="overflow-x-auto">
+                                <p class="text-center text-gray-500">Pilih tanggal untuk menampilkan rekap absensi guru.</p>
+                            </div>
+                        </div>
+
+                        <!-- Rekap Siswa Content -->
+                        <div id="rekap-siswa-tab" class="rekap-tab-content hidden">
+                            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                                <div>
+                                    <label for="rekap-date-siswa" class="block font-semibold mb-1">Tanggal</label>
+                                    <input type="date" id="rekap-date-siswa" class="w-full p-2 border rounded-lg">
+                                </div>
+                                <div id="rekap-kelas-filter-container">
+                                    <label for="rekap-kelas-filter" class="block font-semibold mb-1">Kelas</label>
+                                    <select id="rekap-kelas-filter" class="w-full p-2 border rounded-lg">
+                                        <option value="all">Semua Kelas</option>
+                                    </select>
+                                </div>
+                                <div class="self-end">
+                                    <button id="filter-rekap-siswa-btn" class="btn-primary w-full">Tampilkan</button>
+                                </div>
+                            </div>
+                            <div id="rekap-siswa-results" class="overflow-x-auto">
+                                 <p class="text-center text-gray-500">Pilih filter untuk menampilkan rekap absensi siswa.</p>
+                            </div>
+                            <!-- Gemini Feature: AI Summary -->
+                            <div id="rekap-summary-section" class="mt-6 hidden">
+                                <button id="generate-summary-btn" class="btn-primary flex items-center gap-2">
+                                    ✨ Buat Ringkasan AI
+                                </button>
+                                <div id="rekap-summary-container" class="mt-4 p-4 bg-blue-50 border-l-4 border-blue-500 rounded-r-lg min-h-[100px] text-gray-700">
+                                    Klik tombol di atas untuk membuat ringkasan cerdas dari data absensi yang ditampilkan.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Admin Page -->
+            <section id="admin-page" class="page">
+                 <div class="flex border-b mb-6">
+                    <button class="admin-tab-btn py-3 px-6 font-semibold text-gray-600 border-b-2 border-transparent active" data-tab="data-guru">Data Guru</button>
+                    <button class="admin-tab-btn py-3 px-6 font-semibold text-gray-600 border-b-2 border-transparent" data-tab="data-kelas">Data Kelas</button>
+                    <button class="admin-tab-btn py-3 px-6 font-semibold text-gray-600 border-b-2 border-transparent" data-tab="data-siswa">Data Siswa</button>
+                    <button class="admin-tab-btn py-3 px-6 font-semibold text-gray-600 border-b-2 border-transparent" data-tab="pengaturan">Pengaturan</button>
+                </div>
+                
+                <!-- Admin Content Panes -->
+                <div id="admin-content">
+                    <!-- Data Guru -->
+                    <div id="data-guru-tab" class="admin-tab-content active">
+                        <div class="card p-5">
+                            <div class="flex justify-between items-center mb-4">
+                               <h4 class="text-xl font-bold">Manajemen Data Guru</h4>
+                               <button id="add-guru-btn" class="btn-secondary">Tambah Guru</button>
+                            </div>
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-left">
+                                    <thead class="bg-gray-50">
+                                        <tr>
+                                            <th class="p-3 font-semibold">Nama</th>
+                                            <th class="p-3 font-semibold">NIP/NIPPPK</th>
+                                            <th class="p-3 font-semibold">Jabatan</th>
+                                            <th class="p-3 font-semibold">Mata Pelajaran</th>
+                                            <th class="p-3 font-semibold">No Handphone</th>
+                                            <th class="p-3 font-semibold text-center">Aksi</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="admin-guru-list"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Data Kelas -->
+                    <div id="data-kelas-tab" class="admin-tab-content hidden">
+                        <div class="card p-5">
+                             <div class="flex justify-between items-center mb-4">
+                               <h4 class="text-xl font-bold">Manajemen Data Kelas</h4>
+                               <button id="add-kelas-btn" class="btn-secondary">Tambah Kelas</button>
+                            </div>
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-left">
+                                    <thead class="bg-gray-50">
+                                        <tr>
+                                            <th class="p-3 font-semibold">Nama Kelas</th>
+                                            <th class="p-3 font-semibold">Wali Kelas</th>
+                                            <th class="p-3 font-semibold text-center">Aksi</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="admin-kelas-list"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Data Siswa -->
+                    <div id="data-siswa-tab" class="admin-tab-content hidden">
+                        <div class="card p-5">
+                             <div class="flex justify-between items-center mb-4">
+                               <h4 class="text-xl font-bold">Manajemen Data Siswa</h4>
+                               <button id="add-siswa-btn" class="btn-secondary">Tambah Siswa</button>
+                            </div>
+                             <div class="mb-4">
+                                <label for="class-filter-admin" class="font-semibold mr-2">Filter per Kelas:</label>
+                                <select id="class-filter-admin" class="p-2 border rounded-lg">
+                                    <option value="all">Semua Kelas</option>
+                                </select>
+                             </div>
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-left">
+                                    <thead class="bg-gray-50">
+                                        <tr>
+                                            <th class="p-3 font-semibold">Nama</th>
+                                            <th class="p-3 font-semibold">NISN</th>
+                                            <th class="p-3 font-semibold">Kelas</th>
+                                            <th class="p-3 font-semibold">Nama Orang Tua</th>
+                                            <th class="p-3 font-semibold">No Handphone</th>
+                                            <th class="p-3 font-semibold text-center">Aksi</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="admin-siswa-list"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                     <!-- Pengaturan -->
+                    <div id="pengaturan-tab" class="admin-tab-content hidden">
+                        <div class="card p-5 mb-6">
+                             <h4 class="text-xl font-bold mb-4">Identitas Sekolah</h4>
+                             <form id="school-info-form" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label for="school-name" class="block mb-1 font-semibold">Nama Sekolah</label>
+                                    <input type="text" id="school-name" class="w-full p-2 border rounded-lg">
+                                </div>
+                                <div>
+                                    <label for="school-npsn" class="block mb-1 font-semibold">NPSN</label>
+                                    <input type="text" id="school-npsn" class="w-full p-2 border rounded-lg">
+                                </div>
+                                <div class="md:col-span-2">
+                                    <label for="school-address" class="block mb-1 font-semibold">Alamat</label>
+                                    <input type="text" id="school-address" class="w-full p-2 border rounded-lg">
+                                </div>
+                                <div class="md:col-span-2">
+                                    <label class="block mb-1 font-semibold">Unggah Logo Sekolah (Max 500KB)</label>
+                                    <div class="flex items-center gap-4">
+                                        <img id="logo-preview" src="https://placehold.co/64x64/E0E7FF/1E40AF?text=Logo" alt="Logo Preview" class="h-16 w-16 rounded-full object-cover border-2 border-gray-200">
+                                        <input type="file" id="school-logo-upload" class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none" accept="image/*">
+                                    </div>
+                                </div>
+                                <div>
+                                    <label for="school-principal" class="block mb-1 font-semibold">Nama Kepala Sekolah</label>
+                                    <input type="text" id="school-principal" class="w-full p-2 border rounded-lg">
+                                </div>
+                                <div>
+                                    <label for="school-principal-nip" class="block mb-1 font-semibold">NIP Kepala Sekolah</label>
+                                    <input type="text" id="school-principal-nip" class="w-full p-2 border rounded-lg">
+                                </div>
+                                <div class="md:col-span-2 text-right">
+                                    <button type="submit" class="btn-primary">Simpan Identitas</button>
+                                </div>
+                             </form>
+                        </div>
+                        <div class="card p-5">
+                             <h4 class="text-xl font-bold mb-4">Keamanan Akun Admin</h4>
+                             <form id="admin-creds-form" class="space-y-4 max-w-md">
+                                 <div>
+                                    <label for="admin-username" class="block mb-1 font-semibold">Username</label>
+                                    <input type="text" id="admin-username" class="w-full p-2 border rounded-lg" required>
+                                </div>
+                                <div>
+                                    <label for="admin-password" class="block mb-1 font-semibold">Password Baru</label>
+                                    <input type="password" id="admin-password" class="w-full p-2 border rounded-lg" required>
+                                </div>
+                                <div>
+                                    <label for="admin-password-confirm" class="block mb-1 font-semibold">Konfirmasi Password Baru</label>
+                                    <input type="password" id="admin-password-confirm" class="w-full p-2 border rounded-lg" required>
+                                </div>
+                                <div class="text-right">
+                                    <button type="submit" class="btn-primary">Simpan Akun</button>
+                                </div>
+                             </form>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Modal -->
+    <div id="modal-container" class="hidden"></div>
+    
+    <!-- Toast Notification -->
+    <div id="toast">
+        <div id="toast-content" class="flex items-center gap-3 text-white py-3 px-5 rounded-lg shadow-xl">
+            <div id="toast-icon" class="flex-shrink-0"></div>
+            <div>
+                <p id="toast-title" class="font-bold"></p>
+                <p id="toast-message" class="text-sm"></p>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        // --- Firebase SDK Imports ---
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc, setDoc, addDoc, updateDoc, deleteDoc, onSnapshot, collection, query, where, getDocs, serverTimestamp, Timestamp, orderBy } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        
+        // --- Firebase Configuration ---
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : { apiKey: "YOUR_API_KEY", authDomain: "YOUR_AUTH_DOMAIN", projectId: "YOUR_PROJECT_ID" };
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'smpn3-lempuing-jaya';
+        
+        let app, auth, db, userId;
+        let teachersCol, classesCol, studentsCol, guruAttendanceLogCol, siswaAttendanceCol, configDoc;
+
+
+        // --- App State ---
+        let teachers = [];
+        let students = [];
+        let classes = [];
+        let todayGuruAttendanceLog = [];
+        let todaySiswaAttendance = [];
+        let schoolSettings = {};
+        let adminCreds = { username: 'admin', password: 'password' }; // Default credentials
+        let isAdminLoggedIn = false;
+
+
+        // --- DOM Elements ---
+        const sidebarLinks = document.querySelectorAll('.sidebar-link');
+        const pages = document.querySelectorAll('.page');
+        const menuToggle = document.getElementById('menu-toggle');
+        const sidebar = document.getElementById('sidebar');
+
+        // --- Gemini API Function ---
+        const callGeminiAPI = async (prompt, buttonElement = null) => {
+            if (buttonElement) {
+                buttonElement.disabled = true;
+                buttonElement.innerHTML += ' <span class="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"></span>';
+            }
+            const apiKey = ""; // API key is handled by the environment, leave it empty.
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+
+            const payload = {
+                contents: [{ parts: [{ text: prompt }] }],
+            };
+
+            try {
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    const errorBody = await response.text();
+                    console.error("API Error Response:", errorBody);
+                    throw new Error(`API call failed with status: ${response.status}`);
+                }
+
+                const result = await response.json();
+                const candidate = result.candidates?.[0];
+
+                if (candidate && candidate.content?.parts?.[0]?.text) {
+                    return candidate.content.parts[0].text;
+                } else {
+                    return "Tidak dapat menghasilkan respons. Coba lagi.";
+                }
+            } catch (error) {
+                console.error("Gemini API call error:", error);
+                return "Terjadi kesalahan saat menghubungi AI. Periksa konsol untuk detail.";
+            } finally {
+                if (buttonElement) {
+                    buttonElement.disabled = false;
+                    buttonElement.querySelector('.animate-spin')?.remove();
+                }
+            }
+        };
+
+
+        // --- Utility Functions ---
+        const showToast = (title, message, type = 'info') => {
+            const toast = document.getElementById('toast');
+            const toastContent = document.getElementById('toast-content');
+            const toastIcon = document.getElementById('toast-icon');
+            const toastTitle = document.getElementById('toast-title');
+            const toastMessage = document.getElementById('toast-message');
+
+            toastTitle.textContent = title;
+            toastMessage.textContent = message;
+
+            toastContent.className = 'flex items-center gap-3 text-white py-3 px-5 rounded-lg shadow-xl'; // Reset classes
+            let iconName = '';
+            let bgColorClass = '';
+            
+            switch (type) {
+                case 'success':
+                    bgColorClass = 'bg-emerald-500';
+                    iconName = 'check-circle';
+                    break;
+                case 'error':
+                    bgColorClass = 'bg-red-500';
+                    iconName = 'x-circle';
+                    break;
+                default: // 'info'
+                    bgColorClass = 'bg-blue-500';
+                    iconName = 'info';
+                    break;
+            }
+
+            toastContent.classList.add(bgColorClass);
+            toastIcon.innerHTML = `<i data-lucide="${iconName}"></i>`;
+            lucide.createIcons();
+            
+            toast.style.transform = 'translate(-50%, 0)';
+            toast.style.opacity = '1';
+
+            if(toast.timeoutId) clearTimeout(toast.timeoutId);
+
+            toast.timeoutId = setTimeout(() => {
+                toast.style.transform = 'translate(-50%, -150%)';
+                toast.style.opacity = '0';
+            }, 3500);
+        };
+
+        const getTodayDateString = () => {
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = String(today.getMonth() + 1).padStart(2, '0');
+            const day = String(today.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        };
+        
+        const getCurrentTimeString = () => {
+            const now = new Date();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            return `${hours}:${minutes}`;
+        };
+
+        const fileToBase64 = (file) => new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = error => reject(error);
+        });
+
+        const showModal = (title, content, maxWidth = '500px') => {
+            const modalContainer = document.getElementById('modal-container');
+            modalContainer.innerHTML = `
+                <div class="modal-backdrop">
+                    <div class="modal-content" style="max-width: ${maxWidth};">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-xl font-bold">${title}</h3>
+                            <button id="close-modal-btn" class="text-gray-500 hover:text-gray-800 p-1">&times;</button>
+                        </div>
+                        <div>${content}</div>
+                    </div>
+                </div>
+            `;
+            modalContainer.classList.remove('hidden');
+            document.getElementById('close-modal-btn').addEventListener('click', () => {
+                modalContainer.classList.add('hidden');
+            });
+        };
+
+        const closeModal = () => {
+            document.getElementById('modal-container').classList.add('hidden');
+        };
+
+        const navigateTo = (pageId) => {
+             sidebarLinks.forEach(link => {
+                if (link.dataset.page === pageId) {
+                    link.click();
+                }
+            });
+        }
+        window.navigateTo = navigateTo;
+
+
+        // --- Page Navigation & Admin Auth ---
+        const switchPage = (pageId) => {
+            pages.forEach(page => page.classList.remove('active'));
+            document.getElementById(`${pageId}-page`).classList.add('active');
+
+            sidebarLinks.forEach(link => {
+                link.classList.toggle('active', link.dataset.page === pageId);
+            });
+            if(pageId === 'absen-guru') {
+                initializeGuruAttendanceForm();
+            }
+        };
+        
+        const showAdminLogin = () => {
+            const content = `
+                <form id="admin-login-form" class="space-y-4">
+                    <p class="text-sm text-gray-600">Silakan masukkan kredensial untuk mengakses halaman admin.</p>
+                    <div>
+                        <label for="login-username" class="block mb-1 font-semibold">Username</label>
+                        <input type="text" id="login-username" class="w-full p-2 border rounded-lg" required>
+                    </div>
+                     <div>
+                        <label for="login-password" class="block mb-1 font-semibold">Password</label>
+                        <input type="password" id="login-password" class="w-full p-2 border rounded-lg" required>
+                    </div>
+                    <p id="login-error" class="text-red-500 text-sm hidden"></p>
+                    <div class="flex justify-end">
+                        <button type="submit" class="btn-primary">Login</button>
+                    </div>
+                </form>
+            `;
+            showModal('Login Admin', content, '400px');
+            
+            document.getElementById('admin-login-form').addEventListener('submit', (e) => {
+                e.preventDefault();
+                const username = document.getElementById('login-username').value;
+                const password = document.getElementById('login-password').value;
+                const errorEl = document.getElementById('login-error');
+                
+                if(username === adminCreds.username && password === adminCreds.password){
+                    isAdminLoggedIn = true;
+                    closeModal();
+                    switchPage('admin');
+                } else {
+                    errorEl.textContent = "Username atau password salah.";
+                    errorEl.classList.remove('hidden');
+                }
+            });
+        };
+
+        sidebarLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const pageId = e.currentTarget.dataset.page;
+                
+                if(pageId === 'admin' && !isAdminLoggedIn){
+                    showAdminLogin();
+                    return;
+                }
+                
+                switchPage(pageId);
+                if (window.innerWidth < 768) {
+                    sidebar.classList.add('-translate-x-full');
+                }
+            });
+        });
+
+        menuToggle.addEventListener('click', (e) => {
+            e.stopPropagation(); // Mencegah event "bubble up" ke elemen main
+            sidebar.classList.toggle('-translate-x-full');
+        });
+
+        // Sembunyikan sidebar saat area konten utama di-klik pada layar mobile
+        document.querySelector('main').addEventListener('click', () => {
+            if (window.innerWidth < 768 && !sidebar.classList.contains('-translate-x-full')) {
+                sidebar.classList.add('-translate-x-full');
+            }
+        });
+        
+        // --- Admin/Rekap Page Tabs ---
+        const setupTabListeners = (btnClass, contentClass) => {
+            const tabBtns = document.querySelectorAll(`.${btnClass}`);
+            const tabContents = document.querySelectorAll(`.${contentClass}`);
+            
+            tabBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const tabId = btn.dataset.tab;
+                    
+                    tabBtns.forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    
+                    tabContents.forEach(content => {
+                        content.classList.toggle('hidden', content.id !== `${tabId}-tab`);
+                        content.classList.toggle('active', content.id === `${tabId}-tab`);
+                    });
+                });
+            });
+        };
+        
+        // --- Date and Time ---
+        const updateDateTime = () => {
+            const now = new Date();
+            document.getElementById('current-date').textContent = now.toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+            document.getElementById('current-time').textContent = now.toLocaleTimeString('id-ID');
+        };
+        setInterval(updateDateTime, 1000);
+
+        // --- Render Functions ---
+        const updateSchoolUI = (settings) => {
+            const defaultName = "SMPN 3 Lempuing Jaya";
+            const defaultLogo = "https://placehold.co/40x40/1E40AF/FFFFFF?text=3";
+
+            const schoolName = settings.name || defaultName;
+            const schoolLogo = settings.logoDataUrl || defaultLogo;
+
+            document.getElementById('sidebar-school-name').textContent = schoolName;
+            document.getElementById('header-school-name').textContent = schoolName;
+            
+            document.getElementById('sidebar-logo').src = schoolLogo;
+            document.getElementById('header-logo').src = schoolLogo;
+            
+            if(document.getElementById('logo-preview')) {
+                document.getElementById('logo-preview').src = schoolLogo;
+            }
+            
+            // Populate settings form
+            document.getElementById('school-name').value = settings.name || '';
+            document.getElementById('school-npsn').value = settings.npsn || '';
+            document.getElementById('school-address').value = settings.address || '';
+            document.getElementById('school-principal').value = settings.principal || '';
+            document.getElementById('school-principal-nip').value = settings.principalNip || '';
+        };
+
+        const renderTeacherListAdmin = () => {
+            const list = document.getElementById('admin-guru-list');
+            if(!list) return;
+            list.innerHTML = teachers.map(t => `
+                <tr class="border-b">
+                    <td class="p-3">${t.name || '-'}</td>
+                    <td class="p-3">${t.nip || '-'}</td>
+                    <td class="p-3">${t.position || '-'}</td>
+                    <td class="p-3">${t.subject || '-'}</td>
+                    <td class="p-3">${t.phone || '-'}</td>
+                    <td class="p-3 text-center space-x-2">
+                        <button class="edit-guru-btn text-blue-500 hover:text-blue-700" data-id="${t.id}"><i data-lucide="edit" class="w-5 h-5"></i></button>
+                        <button class="delete-guru-btn text-red-500 hover:text-red-700" data-id="${t.id}"><i data-lucide="trash-2" class="w-5 h-5"></i></button>
+                    </td>
+                </tr>
+            `).join('');
+            lucide.createIcons();
+        };
+
+        const renderClassListAdmin = () => {
+             const list = document.getElementById('admin-kelas-list');
+             if(!list) return;
+             list.innerHTML = classes.map(c => `
+                <tr class="border-b">
+                    <td class="p-3">${c.name}</td>
+                    <td class="p-3">${c.waliKelasName || '-'}</td>
+                    <td class="p-3 text-center space-x-2">
+                        <button class="edit-kelas-btn text-blue-500 hover:text-blue-700" data-id="${c.id}"><i data-lucide="edit" class="w-5 h-5"></i></button>
+                        <button class="delete-kelas-btn text-red-500 hover:text-red-700" data-id="${c.id}"><i data-lucide="trash-2" class="w-5 h-5"></i></button>
+                    </td>
+                </tr>
+            `).join('');
+            lucide.createIcons();
+        }
+
+        const renderStudentListAdmin = (filterClassId = 'all') => {
+            const list = document.getElementById('admin-siswa-list');
+            if (!list) return;
+
+            const filteredStudents = filterClassId === 'all' ? students : students.filter(s => s.classId === filterClassId);
+
+            list.innerHTML = filteredStudents.map(s => {
+                const studentClass = classes.find(c => c.id === s.classId);
+                return `
+                    <tr class="border-b">
+                        <td class="p-3">${s.name || '-'}</td>
+                        <td class="p-3">${s.nisn || '-'}</td>
+                        <td class="p-3">${studentClass ? studentClass.name : 'Belum ada kelas'}</td>
+                        <td class="p-3">${s.parentName || '-'}</td>
+                        <td class="p-3">${s.phone || '-'}</td>
+                        <td class="p-3 text-center space-x-2">
+                            <button class="edit-siswa-btn text-blue-500 hover:text-blue-700" data-id="${s.id}"><i data-lucide="edit" class="w-5 h-5"></i></button>
+                            <button class="delete-siswa-btn text-red-500 hover:text-red-700" data-id="${s.id}"><i data-lucide="trash-2" class="w-5 h-5"></i></button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+            lucide.createIcons();
+        };
+        
+        const renderStudentAttendanceList = (classId) => {
+            const list = document.getElementById('student-attendance-list');
+            const quickFillContainer = document.getElementById('quick-fill-container');
+            if(!list) return;
+            
+            if(!classId || classId === 'Pilih kelas...') {
+                list.innerHTML = `<tr><td colspan="3" class="text-center p-4 text-gray-500">Silakan pilih kelas terlebih dahulu.</td></tr>`;
+                quickFillContainer.classList.add('hidden');
+                return;
+            }
+            
+            quickFillContainer.classList.remove('hidden');
+            const studentsInClass = students.filter(s => s.classId === classId);
+            list.innerHTML = studentsInClass.map(s => {
+                const attendance = todaySiswaAttendance.find(att => att.studentId === s.id);
+                const status = attendance ? attendance.status : 'Belum Absen';
+                const statusColor = {
+                    'Hadir': 'text-green-600 bg-green-100',
+                    'Izin': 'text-yellow-600 bg-yellow-100',
+                    'Sakit': 'text-orange-600 bg-orange-100',
+                    'Alpha': 'text-red-600 bg-red-100',
+                    'Belum Absen': 'text-gray-600 bg-gray-100'
+                };
+                return `
+                    <tr class="border-b">
+                        <td class="p-3 font-medium">${s.name}</td>
+                        <td class="p-3"><span class="px-2 py-1 rounded-full text-sm font-semibold ${statusColor[status]}">${status}</span></td>
+                        <td class="p-3 text-center space-x-1">
+                            ${!attendance ? `
+                            <button class="siswa-absen-btn p-2 bg-green-500 text-white rounded-lg hover:bg-green-600" data-id="${s.id}" data-name="${s.name}" data-status="Hadir" data-class-id="${classId}">Hadir</button>
+                            <button class="siswa-absen-btn p-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600" data-id="${s.id}" data-name="${s.name}" data-status="Izin" data-class-id="${classId}">Izin</button>
+                            <button class="siswa-absen-btn p-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600" data-id="${s.id}" data-name="${s.name}" data-status="Sakit" data-class-id="${classId}">Sakit</button>
+                            <button class="siswa-absen-btn p-2 bg-red-500 text-white rounded-lg hover:bg-red-600" data-id="${s.id}" data-name="${s.name}" data-status="Alpha" data-class-id="${classId}">Alpha</button>
+                            ` : `<span class="text-sm text-gray-500">Sudah absen</span>`}
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        };
+        
+        const populateClassSelectors = () => {
+            const selectors = document.querySelectorAll('#class-selector-siswa, #class-filter-admin, #rekap-kelas-filter');
+            selectors.forEach(selector => {
+                const firstOption = selector.querySelector('option');
+                selector.innerHTML = '';
+                selector.appendChild(firstOption);
+                classes.forEach(c => {
+                    const option = document.createElement('option');
+                    option.value = c.id;
+                    option.textContent = c.name;
+                    selector.appendChild(option);
+                });
+            });
+        }
+        
+        const updateDashboard = () => {
+            const guruHadirIds = new Set(todayGuruAttendanceLog
+                .filter(log => log.status === 'Hadir' && log.type === 'datang')
+                .map(log => log.teacherId)
+            );
+            document.getElementById('guru-hadir-count').textContent = guruHadirIds.size;
+
+            const totalStudents = students.length;
+            if (totalStudents > 0) {
+                 const siswaHadirCount = todaySiswaAttendance.filter(att => att.status === 'Hadir').length;
+                 const percentage = Math.round((siswaHadirCount / totalStudents) * 100);
+                 document.getElementById('siswa-hadir-count').textContent = `${percentage}%`;
+            } else {
+                document.getElementById('siswa-hadir-count').textContent = '0%';
+            }
+
+            document.getElementById('total-guru-count').textContent = teachers.length;
+        }
+
+        // --- Data Fetching & Real-time Listeners ---
+        const setupListeners = () => {
+            onSnapshot(configDoc, (docSnap) => {
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    schoolSettings = data.schoolInfo || {};
+                    adminCreds = data.adminCreds || { username: 'admin', password: 'password' };
+                    updateSchoolUI(schoolSettings);
+                    document.getElementById('admin-username').value = adminCreds.username;
+                } else {
+                    setDoc(configDoc, { schoolInfo: {}, adminCreds: { username: 'admin', password: 'password' } });
+                }
+            });
+
+            onSnapshot(teachersCol, (snapshot) => {
+                teachers = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                renderTeacherListAdmin();
+                updateDashboard();
+            });
+
+            onSnapshot(classesCol, (snapshot) => {
+                classes = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                renderClassListAdmin();
+                populateClassSelectors();
+            });
+
+            onSnapshot(studentsCol, (snapshot) => {
+                students = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                renderStudentListAdmin();
+                updateDashboard();
+            });
+            
+            const today = getTodayDateString();
+            const qGuru = query(guruAttendanceLogCol, where("date", "==", today));
+            onSnapshot(qGuru, (snapshot) => {
+                todayGuruAttendanceLog = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                updateDashboard();
+            });
+
+            const qSiswa = query(siswaAttendanceCol, where("date", "==", today));
+            onSnapshot(qSiswa, (snapshot) => {
+                todaySiswaAttendance = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                const selectedClass = document.getElementById('class-selector-siswa').value;
+                if(selectedClass) renderStudentAttendanceList(selectedClass);
+                updateDashboard();
+            });
+        };
+
+        // --- Firebase CRUD Functions ---
+        
+        // Teacher CRUD
+        const handleTeacherForm = async (teacherId = null) => {
+            const teacher = teacherId ? teachers.find(t => t.id === teacherId) : null;
+            const title = teacherId ? 'Edit Data Guru' : 'Tambah Guru Baru';
+            const content = `
+                <form id="guru-form" class="space-y-4">
+                    <input type="hidden" id="guru-id" value="${teacherId || ''}">
+                    <div>
+                        <label for="guru-name" class="block mb-1 font-semibold">Nama</label>
+                        <input type="text" id="guru-name" class="w-full p-2 border rounded-lg" value="${teacher ? teacher.name : ''}">
+                    </div>
+                    <div>
+                        <label for="guru-nip" class="block mb-1 font-semibold">NIP/NIPPPK</label>
+                        <input type="number" id="guru-nip" class="w-full p-2 border rounded-lg" value="${teacher ? teacher.nip : ''}">
+                    </div>
+                    <div>
+                        <label for="guru-position" class="block mb-1 font-semibold">Jabatan</label>
+                        <input type="text" id="guru-position" class="w-full p-2 border rounded-lg" value="${teacher ? teacher.position : ''}">
+                    </div>
+                    <div>
+                        <label for="guru-subject" class="block mb-1 font-semibold">Mata Pelajaran</label>
+                        <input type="text" id="guru-subject" class="w-full p-2 border rounded-lg" value="${teacher ? teacher.subject : ''}">
+                    </div>
+                     <div>
+                        <label for="guru-phone" class="block mb-1 font-semibold">No Handphone</label>
+                        <input type="number" id="guru-phone" class="w-full p-2 border rounded-lg" value="${teacher ? teacher.phone : ''}">
+                    </div>
+                    <div class="flex justify-end">
+                        <button type="submit" class="btn-primary">Simpan</button>
+                    </div>
+                </form>
+            `;
+            showModal(title, content);
+
+            document.getElementById('guru-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+
+                const name = document.getElementById('guru-name').value.trim();
+                const nip = document.getElementById('guru-nip').value.trim();
+                const position = document.getElementById('guru-position').value.trim();
+                const subject = document.getElementById('guru-subject').value.trim();
+                const phone = document.getElementById('guru-phone').value.trim();
+
+                if (!name || !nip || !position || !subject || !phone) {
+                    showToast('Perhatian', 'Semua kolom wajib diisi.', 'info');
+                    return;
+                }
+
+                const id = document.getElementById('guru-id').value;
+                const teacherData = { name, nip, position, subject, phone };
+
+                try {
+                    if (id) {
+                        await setDoc(doc(db, `/artifacts/${appId}/public/data/teachers/${id}`), teacherData);
+                        showToast('Sukses', 'Data guru berhasil diperbarui!', 'success');
+                    } else {
+                        await addDoc(teachersCol, teacherData);
+                        showToast('Sukses', 'Guru baru berhasil ditambahkan!', 'success');
+                    }
+                    closeModal();
+                } catch (error) {
+                    console.error("Error saving teacher:", error);
+                    showToast('Gagal', 'Gagal menyimpan data guru.', 'error');
+                }
+            });
+        };
+
+        // Class CRUD
+        const handleClassForm = async (classId = null) => {
+            const aClass = classId ? classes.find(c => c.id === classId) : null;
+            const title = classId ? 'Edit Data Kelas' : 'Tambah Kelas Baru';
+            const teacherOptions = teachers.map(t => `<option value="${t.id}" ${aClass && aClass.waliKelasId === t.id ? 'selected' : ''}>${t.name}</option>`).join('');
+
+            const content = `
+                <form id="kelas-form" class="space-y-4">
+                    <input type="hidden" id="kelas-id" value="${classId || ''}">
+                    <div>
+                        <label for="kelas-name" class="block mb-1 font-semibold">Nama Kelas</label>
+                        <input type="text" id="kelas-name" class="w-full p-2 border rounded-lg" value="${aClass ? aClass.name : ''}" placeholder="Contoh: VII A" required>
+                    </div>
+                    <div>
+                        <label for="wali-kelas" class="block mb-1 font-semibold">Wali Kelas</label>
+                        <select id="wali-kelas" class="w-full p-2 border rounded-lg">
+                            <option value="">Pilih Wali Kelas</option>
+                            ${teacherOptions}
+                        </select>
+                    </div>
+                     <div class="flex justify-end">
+                        <button type="submit" class="btn-primary">Simpan</button>
+                    </div>
+                </form>
+            `;
+            showModal(title, content);
+            
+            document.getElementById('kelas-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const id = document.getElementById('kelas-id').value;
+                const name = document.getElementById('kelas-name').value;
+                const waliKelasSelect = document.getElementById('wali-kelas');
+                const waliKelasId = waliKelasSelect.value;
+                const waliKelasName = waliKelasId ? waliKelasSelect.options[waliKelasSelect.selectedIndex].text : '';
+                
+                const classData = { name, waliKelasId, waliKelasName };
+
+                try {
+                    if(id) {
+                        await setDoc(doc(db, `/artifacts/${appId}/public/data/classes/${id}`), classData);
+                        showToast('Sukses', 'Data kelas berhasil diperbarui!', 'success');
+                    } else {
+                        await addDoc(classesCol, classData);
+                        showToast('Sukses', 'Kelas baru berhasil ditambahkan!', 'success');
+                    }
+                    closeModal();
+                } catch (error) {
+                    console.error("Error saving class:", error);
+                    showToast('Gagal', 'Gagal menyimpan data kelas.', 'error');
+                }
+            });
+        };
+
+        // Student CRUD
+        const handleStudentForm = async (studentId = null) => {
+            const student = studentId ? students.find(s => s.id === studentId) : null;
+            const title = studentId ? 'Edit Data Siswa' : 'Tambah Siswa Baru';
+            const classOptions = classes.map(c => `<option value="${c.id}" ${student && student.classId === c.id ? 'selected' : ''}>${c.name}</option>`).join('');
+            
+            const content = `
+                <form id="siswa-form" class="space-y-4">
+                    <input type="hidden" id="siswa-id" value="${studentId || ''}">
+                    <div>
+                        <label for="siswa-name" class="block mb-1 font-semibold">Nama Siswa</label>
+                        <input type="text" id="siswa-name" class="w-full p-2 border rounded-lg" value="${student ? student.name : ''}" required>
+                    </div>
+                    <div>
+                        <label for="siswa-nisn" class="block mb-1 font-semibold">NISN</label>
+                        <input type="number" id="siswa-nisn" class="w-full p-2 border rounded-lg" value="${student ? student.nisn : ''}" required>
+                    </div>
+                    <div>
+                        <label for="siswa-class" class="block mb-1 font-semibold">Kelas</label>
+                        <select id="siswa-class" class="w-full p-2 border rounded-lg" required>
+                            <option value="">Pilih Kelas</option>
+                            ${classOptions}
+                        </select>
+                    </div>
+                    <div>
+                        <label for="siswa-parent-name" class="block mb-1 font-semibold">Nama Orang Tua</label>
+                        <input type="text" id="siswa-parent-name" class="w-full p-2 border rounded-lg" value="${student ? student.parentName : ''}" required>
+                    </div>
+                    <div>
+                        <label for="siswa-phone" class="block mb-1 font-semibold">No Handphone Orang Tua</label>
+                        <input type="number" id="siswa-phone" class="w-full p-2 border rounded-lg" value="${student ? student.phone : ''}" required>
+                    </div>
+                     <div class="flex justify-end">
+                        <button type="submit" class="btn-primary">Simpan</button>
+                    </div>
+                </form>
+            `;
+            showModal(title, content);
+
+            document.getElementById('siswa-form').addEventListener('submit', async(e) => {
+                e.preventDefault();
+                const id = document.getElementById('siswa-id').value;
+                const studentData = {
+                    name: document.getElementById('siswa-name').value,
+                    nisn: document.getElementById('siswa-nisn').value,
+                    classId: document.getElementById('siswa-class').value,
+                    parentName: document.getElementById('siswa-parent-name').value,
+                    phone: document.getElementById('siswa-phone').value,
+                };
+                
+                try {
+                     if(id) {
+                        await setDoc(doc(db, `/artifacts/${appId}/public/data/students/${id}`), studentData);
+                        showToast('Sukses', 'Data siswa berhasil diperbarui!', 'success');
+                    } else {
+                        await addDoc(studentsCol, studentData);
+                        showToast('Sukses', 'Siswa baru berhasil ditambahkan!', 'success');
+                    }
+                    closeModal();
+                } catch (error) {
+                    console.error("Error saving student:", error);
+                    showToast('Gagal', 'Gagal menyimpan data siswa.', 'error');
+                }
+            });
+        };
+        
+        // Attendance Functions
+        const initializeGuruAttendanceForm = () => {
+            const form = document.getElementById('guru-attendance-form');
+            if (!form) return;
+
+            // Set default date and time
+            document.getElementById('absen-date').value = getTodayDateString();
+            document.getElementById('absen-time').value = getCurrentTimeString();
+
+            // Populate teacher dropdown
+            const guruSelect = document.getElementById('guru-select');
+            guruSelect.innerHTML = '<option value="">Pilih Guru...</option>'; // Reset
+            teachers.forEach(teacher => {
+                const option = document.createElement('option');
+                option.value = teacher.id;
+                option.textContent = teacher.name;
+                guruSelect.appendChild(option);
+            });
+        };
+
+        const submitSiswaAttendance = async (studentId, studentName, status, classId, showNotification = true) => {
+            const studentClass = classes.find(c => c.id === classId);
+            try {
+                await addDoc(siswaAttendanceCol, {
+                    studentId,
+                    studentName,
+                    classId,
+                    className: studentClass ? studentClass.name : '',
+                    status,
+                    date: getTodayDateString(),
+                    timestamp: serverTimestamp(),
+                    recordedBy: userId
+                });
+                if (showNotification) {
+                    showToast('Absensi Disimpan', `Kehadiran untuk ${studentName} (${status}) berhasil dicatat.`, 'success');
+                }
+            } catch (error) {
+                console.error("Error recording student attendance:", error);
+                if (showNotification) {
+                    showToast('Gagal', 'Gagal mencatat absensi siswa.', 'error');
+                }
+                throw error; // Re-throw error for batch handling
+            }
+        };
+
+        const handleQuickFill = (classId, status) => {
+            const studentsToMark = students
+                .filter(s => s.classId === classId)
+                .filter(s => !todaySiswaAttendance.some(att => att.studentId === s.id));
+
+            if (studentsToMark.length === 0) {
+                showToast('Info', 'Semua siswa di kelas ini sudah diabsen.', 'info');
+                return;
+            }
+
+            const className = classes.find(c => c.id === classId)?.name || 'kelas ini';
+            
+            showModal('Konfirmasi Isi Cepat', `
+                <p>Anda akan mengisi status <strong>${status}</strong> untuk <strong>${studentsToMark.length} siswa</strong> yang belum diabsen di ${className}. Lanjutkan?</p>
+                <div class="flex justify-end gap-4 mt-4">
+                    <button id="confirm-quick-fill-btn" class="btn-primary">Lanjutkan</button>
+                    <button id="cancel-quick-fill-btn" class="btn-secondary bg-gray-300 text-gray-800 hover:bg-gray-400">Batal</button>
+                </div>
+            `);
+
+            document.getElementById('confirm-quick-fill-btn').onclick = async () => {
+                closeModal();
+                showToast('Memproses', `Mengisi absensi untuk ${studentsToMark.length} siswa...`, 'info');
+
+                const promises = studentsToMark.map(student => 
+                    submitSiswaAttendance(student.id, student.name, status, classId, false)
+                );
+
+                try {
+                    await Promise.all(promises);
+                    showToast('Sukses', `Absensi untuk ${studentsToMark.length} siswa berhasil diisi dengan status ${status}.`, 'success');
+                } catch (error) {
+                    console.error("Quick fill error:", error);
+                    showToast('Gagal', 'Terjadi kesalahan saat mengisi absensi massal.', 'error');
+                }
+            };
+
+            document.getElementById('cancel-quick-fill-btn').onclick = closeModal;
+        };
+
+        // --- Event Listeners ---
+        document.addEventListener('click', (e) => {
+            // Admin buttons
+            if (e.target.closest('.edit-guru-btn')) {
+                handleTeacherForm(e.target.closest('.edit-guru-btn').dataset.id);
+            }
+            if (e.target.closest('#add-guru-btn')) {
+                handleTeacherForm();
+            }
+            if (e.target.closest('.delete-guru-btn')) {
+                const id = e.target.closest('.delete-guru-btn').dataset.id;
+                showModal('Konfirmasi Hapus', `
+                    <p>Apakah Anda yakin ingin menghapus data guru ini?</p>
+                    <div class="flex justify-end gap-4 mt-4">
+                        <button id="confirm-delete-btn" class="btn-primary bg-red-600 hover:bg-red-700">Hapus</button>
+                        <button id="cancel-delete-btn" class="btn-secondary bg-gray-300 text-gray-800 hover:bg-gray-400">Batal</button>
+                    </div>`);
+                document.getElementById('confirm-delete-btn').onclick = () => {
+                    deleteDoc(doc(db, `/artifacts/${appId}/public/data/teachers/${id}`)).then(() => showToast('Sukses', 'Data guru telah dihapus.', 'success')).catch(err => showToast('Gagal', 'Gagal menghapus data.', 'error'));
+                    closeModal();
+                };
+                document.getElementById('cancel-delete-btn').onclick = closeModal;
+            }
+            if (e.target.closest('#add-kelas-btn')) {
+                handleClassForm();
+            }
+            if (e.target.closest('.edit-kelas-btn')) {
+                handleClassForm(e.target.closest('.edit-kelas-btn').dataset.id);
+            }
+            if (e.target.closest('.delete-kelas-btn')) {
+                const id = e.target.closest('.delete-kelas-btn').dataset.id;
+                showModal('Konfirmasi Hapus', `
+                    <p>Apakah Anda yakin ingin menghapus data kelas ini? Ini akan membuat siswa di kelas ini tidak terhubung.</p>
+                     <div class="flex justify-end gap-4 mt-4">
+                        <button id="confirm-delete-btn" class="btn-primary bg-red-600 hover:bg-red-700">Hapus</button>
+                        <button id="cancel-delete-btn" class="btn-secondary bg-gray-300 text-gray-800 hover:bg-gray-400">Batal</button>
+                    </div>`);
+                document.getElementById('confirm-delete-btn').onclick = () => {
+                    deleteDoc(doc(db, `/artifacts/${appId}/public/data/classes/${id}`)).then(() => showToast('Sukses', 'Data kelas telah dihapus.', 'success')).catch(err => showToast('Gagal', 'Gagal menghapus data.', 'error'));
+                    closeModal();
+                };
+                 document.getElementById('cancel-delete-btn').onclick = closeModal;
+            }
+            if (e.target.closest('#add-siswa-btn')) {
+                handleStudentForm();
+            }
+            if (e.target.closest('.edit-siswa-btn')) {
+                handleStudentForm(e.target.closest('.edit-siswa-btn').dataset.id);
+            }
+            if (e.target.closest('.delete-siswa-btn')) {
+                const id = e.target.closest('.delete-siswa-btn').dataset.id;
+                showModal('Konfirmasi Hapus', `
+                    <p>Apakah Anda yakin ingin menghapus data siswa ini?</p>
+                     <div class="flex justify-end gap-4 mt-4">
+                        <button id="confirm-delete-btn" class="btn-primary bg-red-600 hover:bg-red-700">Hapus</button>
+                        <button id="cancel-delete-btn" class="btn-secondary bg-gray-300 text-gray-800 hover:bg-gray-400">Batal</button>
+                    </div>`);
+                document.getElementById('confirm-delete-btn').onclick = () => {
+                    deleteDoc(doc(db, `/artifacts/${appId}/public/data/students/${id}`)).then(() => showToast('Sukses', 'Data siswa telah dihapus.', 'success')).catch(err => showToast('Gagal', 'Gagal menghapus data.', 'error'));
+                    closeModal();
+                };
+                 document.getElementById('cancel-delete-btn').onclick = closeModal;
+            }
+            
+            // Attendance buttons
+            if (e.target.matches('.siswa-absen-btn')) {
+                const { id, name, status, classId } = e.target.dataset;
+                submitSiswaAttendance(id, name, status, classId);
+            }
+        });
+
+        document.getElementById('absen-status').addEventListener('change', (e) => {
+            const keteranganContainer = document.getElementById('keterangan-container');
+            if (e.target.value === 'Izin') {
+                keteranganContainer.classList.remove('hidden');
+            } else {
+                keteranganContainer.classList.add('hidden');
+            }
+        });
+        
+        document.getElementById('guru-attendance-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const teacherId = document.getElementById('guru-select').value;
+            if (!teacherId) {
+                showToast('Perhatian', 'Silakan pilih nama guru terlebih dahulu.', 'info');
+                return;
+            }
+            const teacherName = document.getElementById('guru-select').options[document.getElementById('guru-select').selectedIndex].text;
+            const type = document.getElementById('absen-type').value;
+            const date = document.getElementById('absen-date').value;
+            
+            // --- VALIDASI ABSENSI GANDA & ALUR ---
+            
+            // 1. Cek duplikat absen 'datang'
+            if (type === 'datang') {
+                const q = query(guruAttendanceLogCol, where("date", "==", date), where("teacherId", "==", teacherId), where("type", "==", "datang"));
+                const snapshot = await getDocs(q);
+                if (!snapshot.empty) {
+                    showToast('Duplikat', `Guru "${teacherName}" sudah absen datang pada tanggal ini.`, 'error');
+                    return;
+                }
+            }
+
+            // 2. Cek apakah sudah 'datang' sebelum 'pulang' & cek duplikat 'pulang'
+            if (type === 'pulang') {
+                // Cek apakah 'datang' sudah ada
+                const qDatang = query(guruAttendanceLogCol, where("date", "==", date), where("teacherId", "==", teacherId), where("type", "==", "datang"));
+                const datangSnapshot = await getDocs(qDatang);
+                if (datangSnapshot.empty) {
+                    showToast('Kesalahan Alur', `Guru "${teacherName}" harus absen datang terlebih dahulu sebelum absen pulang.`, 'error');
+                    return;
+                }
+                
+                // Cek apakah 'pulang' sudah ada
+                const qPulang = query(guruAttendanceLogCol, where("date", "==", date), where("teacherId", "==", teacherId), where("type", "==", "pulang"));
+                const pulangSnapshot = await getDocs(qPulang);
+                if (!pulangSnapshot.empty) {
+                    showToast('Duplikat', `Guru "${teacherName}" sudah absen pulang pada tanggal ini.`, 'error');
+                    return;
+                }
+            }
+
+            const attendanceData = {
+                teacherId,
+                teacherName,
+                type: type,
+                status: document.getElementById('absen-status').value,
+                keterangan: document.getElementById('absen-keterangan').value,
+                date: date,
+                time: document.getElementById('absen-time').value,
+                timestamp: serverTimestamp(),
+                recordedBy: userId
+            };
+
+            try {
+                await addDoc(guruAttendanceLogCol, attendanceData);
+                showToast('Absensi Disimpan', `Absensi ${type === 'datang' ? 'datang' : 'pulang'} untuk ${teacherName} berhasil disimpan.`, 'success');
+                e.target.reset(); // Reset form
+                initializeGuruAttendanceForm(); // Re-initialize with current date/time
+            } catch (error) {
+                console.error("Error saving teacher attendance:", error);
+                showToast('Gagal', 'Gagal menyimpan absensi guru.', 'error');
+            }
+        });
+
+
+        document.getElementById('school-info-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const logoUploadInput = document.getElementById('school-logo-upload');
+            const logoFile = logoUploadInput.files[0];
+
+            let logoDataUrl = schoolSettings.logoDataUrl || null; // Keep old logo if no new one is uploaded
+
+            if (logoFile) {
+                if (logoFile.size > 500 * 1024) { // 500 KB limit
+                    showToast('Gagal Unggah', 'Ukuran file logo terlalu besar. Maksimal 500KB.', 'error');
+                    return;
+                }
+                try {
+                    logoDataUrl = await fileToBase64(logoFile);
+                } catch (error) {
+                    console.error("Error reading logo file:", error);
+                    showToast('Gagal Unggah', 'Gagal memproses file logo.', 'error');
+                    return;
+                }
+            }
+            
+            const newInfo = {
+                name: document.getElementById('school-name').value,
+                npsn: document.getElementById('school-npsn').value,
+                address: document.getElementById('school-address').value,
+                logoDataUrl: logoDataUrl,
+                principal: document.getElementById('school-principal').value,
+                principalNip: document.getElementById('school-principal-nip').value,
+            };
+            try {
+                await updateDoc(configDoc, { schoolInfo: newInfo });
+                showToast('Sukses', 'Identitas sekolah berhasil diperbarui!', 'success');
+            } catch (error) {
+                console.error('Error saving school info: ', error);
+                showToast('Gagal', 'Gagal menyimpan identitas sekolah.', 'error');
+            }
+        });
+
+        document.getElementById('admin-creds-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const username = document.getElementById('admin-username').value;
+            const pass = document.getElementById('admin-password').value;
+            const confirmPass = document.getElementById('admin-password-confirm').value;
+
+            if (pass !== confirmPass) {
+                showToast('Kesalahan Input', 'Password dan konfirmasi password tidak cocok.', 'error');
+                return;
+            }
+            if(pass.length < 6){
+                showToast('Kesalahan Input', 'Password minimal harus 6 karakter.', 'error');
+                return;
+            }
+
+            try {
+                await updateDoc(configDoc, { adminCreds: { username, password: pass } });
+                showToast('Sukses', 'Kredensial admin berhasil diperbarui!', 'success');
+                document.getElementById('admin-password').value = '';
+                document.getElementById('admin-password-confirm').value = '';
+            } catch (error) {
+                console.error('Error saving admin credentials: ', error);
+                showToast('Gagal', 'Gagal menyimpan kredensial admin.', 'error');
+            }
+        });
+        
+        document.getElementById('school-logo-upload').addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                if (file.size > 500 * 1024) {
+                    showToast('Gagal Unggah', 'Ukuran file logo terlalu besar. Maksimal 500KB.', 'error');
+                    e.target.value = ''; // Clear the input
+                    return;
+                }
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    document.getElementById('logo-preview').src = event.target.result;
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+
+        document.getElementById('class-selector-siswa').addEventListener('change', (e) => {
+            renderStudentAttendanceList(e.target.value);
+        });
+
+        document.getElementById('class-filter-admin').addEventListener('change', (e) => {
+            renderStudentListAdmin(e.target.value);
+        });
+        
+        // Rekap Filter
+        document.getElementById('filter-rekap-guru-btn').addEventListener('click', async () => {
+            const date = document.getElementById('rekap-date-guru').value || getTodayDateString();
+            const resultsContainer = document.getElementById('rekap-guru-results');
+            resultsContainer.innerHTML = `<p class="text-center">Memuat data...</p>`;
+            
+            const q = query(guruAttendanceLogCol, where("date", "==", date));
+            const snapshot = await getDocs(q);
+            const attendanceLogs = snapshot.docs.map(doc => doc.data());
+
+            const logMap = new Map();
+            attendanceLogs.forEach(log => {
+                if (!logMap.has(log.teacherId)) {
+                    logMap.set(log.teacherId, []);
+                }
+                logMap.get(log.teacherId).push(log);
+            });
+
+            const recapData = teachers.map(teacher => {
+                const logs = logMap.get(teacher.id) || [];
+                const datangLog = logs.find(l => l.type === 'datang');
+                const pulangLog = logs.find(l => l.type === 'pulang');
+
+                const keterangan = [];
+                if (datangLog && datangLog.keterangan) keterangan.push(`Datang: ${datangLog.keterangan}`);
+                if (pulangLog && pulangLog.keterangan) keterangan.push(`Pulang: ${pulangLog.keterangan}`);
+
+                return {
+                    teacherName: teacher.name,
+                    datang: datangLog ? datangLog.time : '-',
+                    pulang: pulangLog ? pulangLog.time : '-',
+                    status: datangLog ? datangLog.status : 'Alpha',
+                    keterangan: keterangan.join('; ') || '-'
+                };
+            });
+
+            resultsContainer.innerHTML = `
+                <table class="w-full text-left mt-4">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="p-3 font-semibold">Nama Guru</th>
+                            <th class="p-3 font-semibold">Waktu Datang</th>
+                            <th class="p-3 font-semibold">Waktu Pulang</th>
+                            <th class="p-3 font-semibold">Status</th>
+                            <th class="p-3 font-semibold">Keterangan</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${recapData.length > 0 ? recapData.map(rec => `
+                            <tr class="border-b">
+                                <td class="p-3">${rec.teacherName}</td>
+                                <td class="p-3">${rec.datang}</td>
+                                <td class="p-3">${rec.pulang}</td>
+                                <td class="p-3">${rec.status}</td>
+                                <td class="p-3">${rec.keterangan}</td>
+                            </tr>
+                        `).join('') : '<tr><td colspan="5" class="text-center p-4">Tidak ada data absensi.</td></tr>'}
+                    </tbody>
+                </table>
+            `;
+        });
+
+        document.getElementById('filter-rekap-siswa-btn').addEventListener('click', async () => {
+            const date = document.getElementById('rekap-date-siswa').value || getTodayDateString();
+            const resultsContainer = document.getElementById('rekap-siswa-results');
+            const summarySection = document.getElementById('rekap-summary-section');
+            resultsContainer.innerHTML = `<p class="text-center">Memuat data...</p>`;
+            summarySection.classList.add('hidden'); // Hide summary on new filter
+            
+            const classFilter = document.getElementById('rekap-kelas-filter').value;
+            let q;
+            if (classFilter === 'all') {
+                q = query(siswaAttendanceCol, where("date", "==", date));
+            } else {
+                q = query(siswaAttendanceCol, where("date", "==", date), where("classId", "==", classFilter));
+            }
+            const snapshot = await getDocs(q);
+            const attendanceData = snapshot.docs.map(doc => doc.data());
+
+            resultsContainer.innerHTML = `
+                <table class="w-full text-left mt-4">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="p-3 font-semibold">Nama Siswa</th>
+                            <th class="p-3 font-semibold">Kelas</th>
+                            <th class="p-3 font-semibold">Status</th>
+                            <th class="p-3 font-semibold">Waktu</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${attendanceData.length > 0 ? attendanceData.map(att => `
+                            <tr class="border-b">
+                                <td class="p-3">${att.studentName}</td>
+                                <td class="p-3">${att.className}</td>
+                                <td class="p-3">${att.status}</td>
+                                <td class="p-3">${att.timestamp ? att.timestamp.toDate().toLocaleTimeString('id-ID') : '-'}</td>
+                            </tr>
+                        `).join('') : '<tr><td colspan="4" class="text-center p-4">Tidak ada data absensi.</td></tr>'}
+                    </tbody>
+                </table>
+            `;
+
+            if(attendanceData.length > 0) {
+                summarySection.classList.remove('hidden');
+                document.getElementById('rekap-summary-container').innerHTML = 'Klik tombol di atas untuk membuat ringkasan cerdas dari data absensi yang ditampilkan.';
+            }
+        });
+        
+        // Gemini Event Listeners
+        document.getElementById('get-motivasi-btn').addEventListener('click', async (e) => {
+            const container = document.getElementById('motivasi-container');
+            container.innerHTML = '<i>Menghasilkan motivasi...</i>';
+            const prompt = "Berikan kutipan motivasi yang singkat, inspiratif, dan cocok untuk siswa SMP di Indonesia. Maksimal 2 kalimat.";
+            const quote = await callGeminiAPI(prompt, e.currentTarget);
+            container.textContent = quote;
+        });
+
+        document.getElementById('generate-summary-btn').addEventListener('click', async (e) => {
+            const summaryContainer = document.getElementById('rekap-summary-container');
+            summaryContainer.innerHTML = '<i>AI sedang menganalisis data dan membuat ringkasan...</i>';
+
+            const rows = document.querySelectorAll('#rekap-siswa-results tbody tr');
+            if (rows.length === 0 || (rows.length === 1 && rows[0].innerText.includes("Tidak ada data"))) {
+                summaryContainer.innerText = 'Tidak ada data untuk diringkas.';
+                return;
+            }
+            
+            let attendanceRecords = [];
+            rows.forEach(row => {
+                const cells = row.querySelectorAll('td');
+                if (cells.length === 4) { 
+                    let record = { name: cells[0].textContent, class: cells[1].textContent, status: cells[2].textContent };
+                    attendanceRecords.push(record);
+                }
+            });
+
+            const date = document.getElementById('rekap-date-siswa').value;
+            const classFilterEl = document.getElementById('rekap-kelas-filter');
+            const classFilter = classFilterEl.options[classFilterEl.selectedIndex].text;
+
+            let prompt = `Anda adalah asisten kepala sekolah yang cerdas. Analisis data absensi berikut untuk siswa pada tanggal ${date} ${classFilter !== 'Semua Kelas' ? 'di kelas ' + classFilter : 'dari semua kelas'}. `;
+            prompt += `Data absensi: ${JSON.stringify(attendanceRecords)}. Berikan ringkasan singkat dalam Bahasa Indonesia dalam format poin-poin (bullet points) menggunakan markdown. Sorot jumlah total untuk setiap status (Hadir, Sakit, Izin, Alpha) dan sebutkan nama-nama yang tidak hadir (Sakit, Izin, Alpha) jika jumlahnya kurang dari 10 orang. Jangan membuat kesimpulan yang berlebihan, hanya laporkan data yang ada.`;
+            
+            const summary = await callGeminiAPI(prompt, e.currentTarget);
+            summaryContainer.innerHTML = summary.replace(/(\*|\-)\s/g, '<br>&bull; ').replace(/^\s*<br>/, '');
+        });
+
+        // --- App Initialization ---
+        const initApp = async () => {
+            app = initializeApp(firebaseConfig);
+            auth = getAuth(app);
+            db = getFirestore(app);
+
+            // Define collections after db is initialized
+            teachersCol = collection(db, `/artifacts/${appId}/public/data/teachers`);
+            classesCol = collection(db, `/artifacts/${appId}/public/data/classes`);
+            studentsCol = collection(db, `/artifacts/${appId}/public/data/students`);
+            guruAttendanceLogCol = collection(db, `/artifacts/${appId}/public/data/guru_attendance_log`);
+            siswaAttendanceCol = collection(db, `/artifacts/${appId}/public/data/siswa_attendance`);
+            configDoc = doc(db, `/artifacts/${appId}/public/data/config/settings`);
+
+
+            onAuthStateChanged(auth, user => {
+                if (user) {
+                    userId = user.uid;
+                    document.getElementById('userIdDisplay').textContent = userId.substring(0, 8) + '...';
+                    setupListeners(); // Setup listeners after user is authenticated
+                } else {
+                     document.getElementById('userIdDisplay').textContent = 'Not logged in';
+                }
+            });
+
+            try {
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    await signInAnonymously(auth);
+                }
+            } catch (error) {
+                console.error("Authentication failed:", error);
+                // Handle auth failure (e.g., show an error message)
+            }
+        };
+
+        // --- Entry Point ---
+        window.onload = () => {
+            lucide.createIcons();
+            updateDateTime();
+            document.getElementById('rekap-date-guru').value = getTodayDateString();
+            document.getElementById('rekap-date-siswa').value = getTodayDateString();
+            setupTabListeners('admin-tab-btn', 'admin-tab-content');
+            setupTabListeners('rekap-tab-btn', 'rekap-tab-content');
+
+            document.getElementById('quick-fill-container').addEventListener('click', (e) => {
+                if (e.target.matches('.quick-fill-btn')) {
+                    const status = e.target.dataset.status;
+                    const classId = document.getElementById('class-selector-siswa').value;
+                    if (classId && classId !== 'Pilih kelas...') {
+                        handleQuickFill(classId, status);
+                    }
+                }
+            });
+            
+            initApp();
+        };
+
+    </script>
+</body>
+</html>
+
+
