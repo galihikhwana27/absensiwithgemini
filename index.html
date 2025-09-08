@@ -25,7 +25,13 @@
         .sidebar-link {
             transition: all 0.2s ease-in-out;
         }
-        .sidebar-link:hover, .sidebar-link.active {
+        /* Adjusted hover/active state for dark sidebar */
+        .sidebar-link:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white;
+            transform: translateX(4px);
+        }
+        .sidebar-link.active {
             background-color: var(--primary);
             color: white;
             transform: translateX(4px);
@@ -33,8 +39,8 @@
         .card {
             background-color: white;
             border-radius: 0.75rem;
-            border: 1px solid #e5e7eb; /* Added subtle border for contrast */
-            box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.05); /* Softened shadow */
+            border: 1px solid #e5e7eb;
+            box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.05);
             transition: all 0.3s ease-in-out;
         }
         .card:hover {
@@ -119,8 +125,8 @@
             width: 90%;
             max-width: 500px;
             box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
-            max-height: 90vh; /* Batasi tinggi maksimal modal */
-            overflow-y: auto; /* Tambahkan scroll jika konten meluap */
+            max-height: 90vh;
+            overflow-y: auto;
         }
         .rekap-tab-btn.active, .admin-tab-btn.active {
             color: var(--primary);
@@ -143,25 +149,24 @@
 <body class="flex h-screen">
 
     <!-- Sidebar -->
-    <aside id="sidebar" class="bg-white w-64 h-full p-4 flex-shrink-0 transform -translate-x-full fixed md:relative md:translate-x-0 sidebar z-20 shadow-lg">
-        <div class="flex items-center gap-3 mb-6">
-            <img src="https://placehold.co/40x40/1E40AF/FFFFFF?text=3" id="sidebar-logo" alt="Logo Sekolah" class="rounded-full">
-            <h1 class="text-xl font-bold text-gray-800" id="sidebar-school-name">SMPN 3 Lempuing Jaya</h1>
+    <aside id="sidebar" class="w-64 h-full p-4 flex-shrink-0 transform -translate-x-full fixed md:relative md:translate-x-0 sidebar z-20" style="background-color: rgba(17, 24, 39, 0.9); backdrop-filter: blur(8px);">
+        <div class="h-12 mb-6 flex items-center justify-center">
+            <h1 class="text-xl font-bold text-white">Menu Navigasi</h1>
         </div>
         <nav class="space-y-2">
-            <a href="#" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 font-semibold active" data-page="home">
+            <a href="#" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-gray-300 font-semibold active" data-page="home">
                 <i data-lucide="home"></i> Home
             </a>
-            <a href="#" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 font-semibold" data-page="absen-guru">
+            <a href="#" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-gray-300 font-semibold" data-page="absen-guru">
                 <i data-lucide="user-check"></i> Absen Guru
             </a>
-            <a href="#" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 font-semibold" data-page="absen-siswa">
+            <a href="#" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-gray-300 font-semibold" data-page="absen-siswa">
                 <i data-lucide="users"></i> Absen Siswa
             </a>
-            <a href="#" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 font-semibold" data-page="rekap-absen">
+            <a href="#" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-gray-300 font-semibold" data-page="rekap-absen">
                 <i data-lucide="file-text"></i> Rekap Absen
             </a>
-            <a href="#" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 font-semibold" data-page="admin">
+            <a href="#" class="sidebar-link flex items-center gap-3 px-4 py-3 rounded-lg text-gray-300 font-semibold" data-page="admin">
                 <i data-lucide="settings"></i> Admin
             </a>
         </nav>
@@ -257,16 +262,6 @@
                             <p id="total-guru-count" class="text-3xl font-bold">0</p>
                         </div>
                     </div>
-                </div>
-                 <!-- Gemini Feature: Motivational Quote -->
-                <div class="mt-6 card p-5">
-                    <h4 class="text-xl font-bold mb-4">Motivasi Hari Ini</h4>
-                    <div id="motivasi-container" class="text-gray-600 italic mb-4 min-h-[4rem] flex items-center justify-center p-4 bg-gray-50 rounded-lg">
-                        Klik tombol di bawah untuk mendapatkan kutipan motivasi.
-                    </div>
-                    <button id="get-motivasi-btn" class="btn-primary w-full flex items-center justify-center gap-2">
-                        ✨ Dapatkan Motivasi
-                    </button>
                 </div>
             </section>
 
@@ -406,15 +401,6 @@
                             </div>
                             <div id="rekap-siswa-results" class="overflow-x-auto">
                                  <p class="text-center text-gray-500">Pilih filter untuk menampilkan rekap absensi siswa.</p>
-                            </div>
-                            <!-- Gemini Feature: AI Summary -->
-                            <div id="rekap-summary-section" class="mt-6 hidden">
-                                <button id="generate-summary-btn" class="btn-primary flex items-center gap-2">
-                                    ✨ Buat Ringkasan AI
-                                </button>
-                                <div id="rekap-summary-container" class="mt-4 p-4 bg-blue-50 border-l-4 border-blue-500 rounded-r-lg min-h-[100px] text-gray-700">
-                                    Klik tombol di atas untuk membuat ringkasan cerdas dari data absensi yang ditampilkan.
-                                </div>
                             </div>
                         </div>
                     </div>
@@ -592,19 +578,18 @@
         
         // --- Firebase Configuration ---
         const firebaseConfig = {
-  apiKey: "AIzaSyCMbA9nG-Ux1g4DgYs6l7tO7KyYwswo17U",
-  authDomain: "absensi-smpn3lpj.firebaseapp.com",
-  projectId: "absensi-smpn3lpj",
-  storageBucket: "absensi-smpn3lpj.firebasestorage.app",
-  messagingSenderId: "120025002903",
-  appId: "1:120025002903:web:a44878547d8f37d4d84ad2",
-  measurementId: "G-35SEP40HDD"
-};
+          apiKey: "AIzaSyCMbA9nG-Ux1g4DgYs6l7tO7KyYwswo17U",
+          authDomain: "absensi-smpn3lpj.firebaseapp.com",
+          projectId: "absensi-smpn3lpj",
+          storageBucket: "absensi-smpn3lpj.firebasestorage.app",
+          messagingSenderId: "120025002903",
+          appId: "1:120025002903:web:a44878547d8f37d4d84ad2",
+          measurementId: "G-35SEP40HDD"
+        };
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'smpn3-lempuing-jaya';
         
         let firebaseApp, auth, db, userId;
         let teachersCol, classesCol, studentsCol, guruAttendanceLogCol, siswaAttendanceCol, configDoc;
-
 
         // --- App State ---
         let teachers = [];
@@ -616,59 +601,11 @@
         let adminCreds = { username: 'admin', password: 'password' }; // Default credentials
         let isAdminLoggedIn = false;
 
-
         // --- DOM Elements ---
         const sidebarLinks = document.querySelectorAll('.sidebar-link');
         const pages = document.querySelectorAll('.page');
         const menuToggle = document.getElementById('menu-toggle');
         const sidebar = document.getElementById('sidebar');
-
-        // --- Gemini API Function ---
-        const callGeminiAPI = async (prompt, buttonElement = null) => {
-            if (buttonElement) {
-                buttonElement.disabled = true;
-                buttonElement.innerHTML += ' <span class="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"></span>';
-            }
-            const apiKey = ""; // API key is handled by the environment, leave it empty.
-            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
-
-            const payload = {
-                contents: [{ parts: [{ text: prompt }] }],
-            };
-
-            try {
-                const response = await fetch(apiUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-
-                if (!response.ok) {
-                    const errorBody = await response.text();
-                    console.error("API Error Response:", errorBody);
-                    throw new Error(`API call failed with status: ${response.status}`);
-                }
-
-                const result = await response.json();
-                const candidate = result.candidates?.[0];
-
-                if (candidate && candidate.content?.parts?.[0]?.text) {
-                    return candidate.content.parts[0].text;
-                } else {
-                    return "Tidak dapat menghasilkan respons. Coba lagi.";
-                }
-            } catch (error) {
-                console.error("Gemini API call error:", error);
-                showToast('Gemini Gagal', `Terjadi kesalahan saat menghubungi AI: ${error.message}`, 'error');
-                return "Terjadi kesalahan saat menghubungi AI. Periksa konsol untuk detail.";
-            } finally {
-                if (buttonElement) {
-                    buttonElement.disabled = false;
-                    buttonElement.querySelector('.animate-spin')?.remove();
-                }
-            }
-        };
-
 
         // --- Utility Functions ---
         const showToast = (title, message, type = 'info') => {
@@ -822,11 +759,10 @@
         });
 
         menuToggle.addEventListener('click', (e) => {
-            e.stopPropagation(); // Mencegah event "bubble up" ke elemen main
+            e.stopPropagation();
             sidebar.classList.toggle('-translate-x-full');
         });
 
-        // Sembunyikan sidebar saat area konten utama di-klik pada layar mobile
         document.querySelector('main').addEventListener('click', () => {
             if (window.innerWidth < 768 && !sidebar.classList.contains('-translate-x-full')) {
                 sidebar.classList.add('-translate-x-full');
@@ -863,23 +799,19 @@
 
         // --- Render Functions ---
         const updateSchoolUI = (settings) => {
-            const defaultName = "SMPN 3 Lempuing Jaya";
-            const defaultLogo = "https://placehold.co/40x40/1E40AF/FFFFFF?text=3";
+            const defaultName = "Sistem Absensi Online";
+            const defaultLogo = "https://placehold.co/40x40/FFFFFF/1E40AF?text=3";
 
             const schoolName = settings.name || defaultName;
             const schoolLogo = settings.logoDataUrl || defaultLogo;
 
-            document.getElementById('sidebar-school-name').textContent = schoolName;
             document.getElementById('header-school-name').textContent = schoolName;
-            
-            document.getElementById('sidebar-logo').src = schoolLogo;
             document.getElementById('header-logo').src = schoolLogo;
             
             if(document.getElementById('logo-preview')) {
                 document.getElementById('logo-preview').src = schoolLogo;
             }
             
-            // Populate settings form
             document.getElementById('school-name').value = settings.name || '';
             document.getElementById('school-npsn').value = settings.npsn || '';
             document.getElementById('school-address').value = settings.address || '';
@@ -1585,9 +1517,7 @@
         document.getElementById('filter-rekap-siswa-btn').addEventListener('click', async () => {
             const date = document.getElementById('rekap-date-siswa').value || getTodayDateString();
             const resultsContainer = document.getElementById('rekap-siswa-results');
-            const summarySection = document.getElementById('rekap-summary-section');
             resultsContainer.innerHTML = `<p class="text-center">Memuat data...</p>`;
-            summarySection.classList.add('hidden');
             
             const classFilter = document.getElementById('rekap-kelas-filter').value;
             let q = classFilter === 'all'
@@ -1619,52 +1549,8 @@
                     </tbody>
                 </table>
             `;
-
-            if(attendanceData.length > 0) {
-                summarySection.classList.remove('hidden');
-                document.getElementById('rekap-summary-container').innerHTML = 'Klik tombol di atas untuk membuat ringkasan cerdas dari data absensi yang ditampilkan.';
-            }
         });
         
-        // Gemini Event Listeners
-        document.getElementById('get-motivasi-btn').addEventListener('click', async (e) => {
-            const container = document.getElementById('motivasi-container');
-            container.innerHTML = '<i>Menghasilkan motivasi...</i>';
-            const prompt = "Berikan kutipan motivasi yang singkat, inspiratif, dan cocok untuk siswa SMP di Indonesia. Maksimal 2 kalimat.";
-            const quote = await callGeminiAPI(prompt, e.currentTarget);
-            container.textContent = quote;
-        });
-
-        document.getElementById('generate-summary-btn').addEventListener('click', async (e) => {
-            const summaryContainer = document.getElementById('rekap-summary-container');
-            summaryContainer.innerHTML = '<i>AI sedang menganalisis data dan membuat ringkasan...</i>';
-
-            const rows = document.querySelectorAll('#rekap-siswa-results tbody tr');
-            if (rows.length === 0 || (rows.length === 1 && rows[0].innerText.includes("Tidak ada data"))) {
-                summaryContainer.innerText = 'Tidak ada data untuk diringkas.';
-                return;
-            }
-            
-            let attendanceRecords = [];
-            rows.forEach(row => {
-                const cells = row.querySelectorAll('td');
-                if (cells.length === 4) { 
-                    let record = { name: cells[0].textContent, class: cells[1].textContent, status: cells[2].textContent };
-                    attendanceRecords.push(record);
-                }
-            });
-
-            const date = document.getElementById('rekap-date-siswa').value;
-            const classFilterEl = document.getElementById('rekap-kelas-filter');
-            const classFilter = classFilterEl.options[classFilterEl.selectedIndex].text;
-
-            let prompt = `Anda adalah asisten kepala sekolah yang cerdas. Analisis data absensi berikut untuk siswa pada tanggal ${date} ${classFilter !== 'Semua Kelas' ? 'di kelas ' + classFilter : 'dari semua kelas'}. `;
-            prompt += `Data absensi: ${JSON.stringify(attendanceRecords)}. Berikan ringkasan singkat dalam Bahasa Indonesia dalam format poin-poin (bullet points) menggunakan markdown. Sorot jumlah total untuk setiap status (Hadir, Sakit, Izin, Alpha) dan sebutkan nama-nama yang tidak hadir (Sakit, Izin, Alpha) jika jumlahnya kurang dari 10 orang. Jangan membuat kesimpulan yang berlebihan, hanya laporkan data yang ada.`;
-            
-            const summary = await callGeminiAPI(prompt, e.currentTarget);
-            summaryContainer.innerHTML = summary.replace(/(\*|\-)\s/g, '<br>&bull; ').replace(/^\s*<br>/, '');
-        });
-
         // --- App Initialization ---
         const initApp = async () => {
             try {
@@ -1708,8 +1594,8 @@
 
         // --- Entry Point ---
         window.onload = () => {
-            if (firebaseConfig.apiKey.startsWith("GANTI_DENGAN")) {
-                document.body.innerHTML = `<div class="w-full h-screen flex items-center justify-center p-4 bg-yellow-100 text-yellow-800 text-center"><div><h1 class="text-2xl font-bold">Konfigurasi Dibutuhkan</h1><p class="mt-2">Anda belum memasukkan konfigurasi Firebase. Buka file index.html, cari variabel 'firebaseConfig', dan isi dengan detail dari proyek Firebase Anda sesuai tutorial.</p></div></div>`;
+            if (!firebaseConfig.apiKey || firebaseConfig.apiKey.includes("AIzaSyA")) {
+                document.body.innerHTML = `<div class="w-full h-screen flex items-center justify-center p-4 bg-yellow-100 text-yellow-800 text-center"><div><h1 class="text-2xl font-bold">Konfigurasi Dibutuhkan</h1><p class="mt-2">Anda belum memasukkan konfigurasi Firebase. Buka file index.html, cari variabel 'firebaseConfig', dan isi dengan detail dari proyek Firebase Anda.</p></div></div>`;
                 return;
             }
 
@@ -1736,5 +1622,3 @@
     </script>
 </body>
 </html>
-
-
